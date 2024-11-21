@@ -1,58 +1,71 @@
 # Rocket League Replay Analyzer
 
-## Overview
-This project provides a comprehensive tool for analyzing Rocket League replays, leveraging:
-- Carball for replay parsing
-- Claude AI for in-depth game analysis
-- Python for data processing
+A command-line tool that analyzes Rocket League replay files using the Claude AI API. This tool extracts meaningful insights, tactical analysis, and performance metrics from your replays.
 
 ## Features
-- Parse Rocket League replay files
-- Extract detailed game statistics
-- Generate AI-powered performance insights
-- Comprehensive player and team analysis
+
+- Parse Rocket League replay files using the `boxcars` crate
+- Extract detailed game statistics and events
+- Generate AI-powered analysis using Claude API
+- Provide tactical insights and improvement suggestions
 
 ## Prerequisites
-- Python 3.8+
-- Anthropic API Key
-- Rocket League Replay File
+
+- Rust (latest stable version)
+- Claude API key
+- Rocket League replay files
 
 ## Installation
-1. Clone the repository
+
+1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/rocket-league-replay-analyzer.git
-cd rocket-league-replay-analyzer
+git clone https://github.com/yourusername/rocket-league-analyzer.git
+cd rocket-league-analyzer
 ```
 
-2. Create a virtual environment
+2. Create a `.env` file in the project root:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+CLAUDE_API_KEY=your-api-key-here
 ```
 
-3. Install dependencies
+3. Build the project:
 ```bash
-pip install -r requirements.txt
-```
-
-4. Set up environment variables
-```bash
-cp .env.example .env
-# Edit .env and add your Anthropic API Key
+cargo build --release
 ```
 
 ## Usage
+
+1. Basic analysis:
 ```bash
-python -m rocket_league_analyzer.main --replay path/to/replay.replay
+cargo run -- analyze path/to/replay.replay
 ```
 
-## Development
-- Run tests: `pytest tests/`
-- Lint code: `flake8 rocket_league_analyzer`
+2. Detailed analysis with specific focus:
+```bash
+cargo run -- analyze --focus tactical path/to/replay.replay
+```
+
+## Configuration
+
+The analyzer can be configured through command-line arguments or environment variables:
+
+- `CLAUDE_API_KEY`: Your Claude API key (required)
+- `RL_ANALYZER_MODEL`: Claude model to use (default: "claude-3-sonnet-20240229")
+- `RL_ANALYZER_LOG_LEVEL`: Log level (default: "info")
 
 ## Contributing
+
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [boxcars](https://crates.io/crates/boxcars) - Rocket League replay parser
+- [Anthropic](https://anthropic.com) - Claude AI API
