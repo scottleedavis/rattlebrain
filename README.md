@@ -19,7 +19,7 @@ A command-line tool that analyzes Rocket League replay files using the Claude AI
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/rocket-league-analyzer.git
+git clone https://github.com/scottleedavis/rocket-league-analysis-claude.git
 cd rocket-league-analyzer
 ```
 
