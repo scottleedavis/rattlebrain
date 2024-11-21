@@ -1,40 +1,36 @@
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
-use clap::Parser;
+use boxcars::{NetworkParse, ParseError};
 use crate::analyzer::analyze_replay;
 
 mod analyzer;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Path to the replay file
-    #[arg(short, long)]
-    file: PathBuf,
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
-    
+    // Get file path from command line arguments
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        eprintln!("Usage: {} <replay_file>", args[0]);
+        std::process::exit(1);
+    }
+
     // Read the replay file
-    let mut file = File::open(&args.file)?;
+    let mut file = File::open(&args[1])?;
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer)?;
 
     // Parse the replay
-    let replay = match boxcars::ParserBuilder::new(&buffer).parse() {
-        Ok(replay) => replay,
-        Err(e) => return Err(format!("Failed to parse replay: {}", e).into()),
-    };
+    let replay = boxcars::ParserBuilder::new(&buffer)
+        .with_network_parse(NetworkParse::Full)
+        .parse()?;
 
     // Analyze the replay
     let analysis = analyze_replay(&replay)?;
 
-    // Print the analysis results
-    println!("Replay Analysis:");
-    println!("---------------");
+    // Print analysis results
+    println!("\nGame Analysis:");
+    println!("-------------");
     println!("Engine Version: {}", analysis.engine_version);
     println!("Score: {} - {}", analysis.game_score.team_0_score, analysis.game_score.team_1_score);
     println!("Primary Player: {}", analysis.primary_player);
