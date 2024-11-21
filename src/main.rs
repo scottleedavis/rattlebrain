@@ -1,61 +1,49 @@
-use clap::Parser;
-use dotenv::dotenv;
+use std::error::Error;
+use std::fs::File;
+use std::io::Read;
 use std::path::PathBuf;
-use tracing::{info, error};
+use clap::Parser;
+use crate::analyzer::analyze_replay;
 
 mod analyzer;
-mod claude;
-mod types;
 
-use analyzer::ReplayAnalyzer;
-
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Cli {
+struct Args {
     /// Path to the replay file
     #[arg(short, long)]
-    replay: PathBuf,
-
-    /// Analysis focus (tactical, mechanical, positioning)
-    #[arg(short, long, default_value = "general")]
-    focus: String,
+    file: PathBuf,
 }
 
-#[tokio::main]
-async fn main() {
-    // Load environment variables
-    dotenv().ok();
+fn main() -> Result<(), Box<dyn Error>> {
+    let args = Args::parse();
     
-    // Initialize logging
-    tracing_subscriber::fmt::init();
+    // Read the replay file
+    let mut file = File::open(&args.file)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
 
-    // Parse command line arguments
-    let cli = Cli::parse();
-
-    // Get API key from environment
-    let api_key = match std::env::var("CLAUDE_API_KEY") {
-        Ok(key) => key,
-        Err(_) => {
-            error!("CLAUDE_API_KEY environment variable not set");
-            std::process::exit(1);
-        }
+    // Parse the replay
+    let replay = match boxcars::ParserBuilder::new(&buffer).parse() {
+        Ok(replay) => replay,
+        Err(e) => return Err(format!("Failed to parse replay: {}", e).into()),
     };
 
-    // Get optional model override
-    let model = std::env::var("RL_ANALYZER_MODEL").ok();
+    // Analyze the replay
+    let analysis = analyze_replay(&replay)?;
 
-    // Initialize analyzer
-    let analyzer = ReplayAnalyzer::new(api_key, model);
+    // Print the analysis results
+    println!("Replay Analysis:");
+    println!("---------------");
+    println!("Engine Version: {}", analysis.engine_version);
+    println!("Score: {} - {}", analysis.game_score.team_0_score, analysis.game_score.team_1_score);
+    println!("Primary Player: {}", analysis.primary_player);
+    println!("Team Sizes: {} vs {}", analysis.team_sizes.blue, analysis.team_sizes.orange);
+    println!("Match Type: {}", analysis.match_type);
+    println!("Arena: {}", analysis.arena);
+    println!("Platform: {}", analysis.platform);
+    println!("Date: {}", analysis.date);
+    println!("Total Actor Updates: {}", analysis.actor_stats.total_updates);
 
-    // Process replay file
-    match analyzer.analyze_replay(&cli.replay).await {
-        Ok(analysis) => {
-            info!("Analysis complete");
-            println!("\nAnalysis Results:\n{}", analysis);
-        }
-        Err(e) => {
-            error!("Error analyzing replay: {}", e);
-            std::process::exit(1);
-        }
-    }
+    Ok(())
 }
