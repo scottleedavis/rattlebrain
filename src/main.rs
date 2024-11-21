@@ -12,7 +12,6 @@ use crate::analyzer::{
 mod analyzer;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // Get file path from command line arguments
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
         eprintln!("Usage: {} <replay_file>", args[0]);
@@ -22,18 +21,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_path = &args[1];
     let path = Path::new(file_path);
 
-    // Validate file existence
     if !path.exists() {
         eprintln!("Error: Replay file '{}' does not exist.", file_path);
         std::process::exit(1);
     }
 
-    // Read the replay file
     let mut file = File::open(path)?;
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer)?;
 
-    // Parse the replay
     let replay = ParserBuilder::new(&buffer)
         .with_network_parse(NetworkParse::Always)
         .parse()
@@ -42,15 +38,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             e
         })?;
 
-    // Extract replay analysis
     let primary_player = extract_primary_player(&replay);
     let match_type = extract_match_type(&replay);
     let arena = extract_arena(&replay);
     let platform = extract_platform(&replay);
     let date = extract_date(&replay);
-    let total_actor_updates = replay.network_frames.iter().count();
+    let total_actor_updates = replay.network_frames.len();
 
-    // Extract additional information
     let engine_version = get_property_value(&replay.properties, "EngineVersion")
         .and_then(|v| v.as_i32())
         .unwrap_or(0);
@@ -67,7 +61,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .and_then(|v| v.as_i32())
         .unwrap_or(0);
 
-    // Print analysis results
     println!("\nGame Analysis:");
     println!("-------------");
     println!("Engine Version: {}", engine_version);
