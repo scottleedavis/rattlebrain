@@ -4,7 +4,10 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use boxcars::{NetworkParse, ParserBuilder};
-use crate::analyzer::analyze_replay;
+use crate::analyzer::{
+    extract_primary_player, extract_match_type, extract_arena, extract_platform, extract_date,
+    get_property_value,
+};
 
 mod analyzer;
 
@@ -39,24 +42,43 @@ fn main() -> Result<(), Box<dyn Error>> {
             e
         })?;
 
-    // Analyze the replay
-    let analysis = analyze_replay(&replay).map_err(|e| {
-        eprintln!("Failed to analyze replay data: {}", e);
-        e
-    })?;
+    // Extract replay analysis
+    let primary_player = extract_primary_player(&replay);
+    let match_type = extract_match_type(&replay);
+    let arena = extract_arena(&replay);
+    let platform = extract_platform(&replay);
+    let date = extract_date(&replay);
+    let total_actor_updates = replay.network_frames.iter().count();
+
+    // Extract additional information
+    let engine_version = get_property_value(&replay.properties, "EngineVersion")
+        .and_then(|v| v.as_i32())
+        .unwrap_or(0);
+    let team0_score = get_property_value(&replay.properties, "Team0Score")
+        .and_then(|v| v.as_i32())
+        .unwrap_or(0);
+    let team1_score = get_property_value(&replay.properties, "Team1Score")
+        .and_then(|v| v.as_i32())
+        .unwrap_or(0);
+    let team0_size = get_property_value(&replay.properties, "Team0Size")
+        .and_then(|v| v.as_i32())
+        .unwrap_or(0);
+    let team1_size = get_property_value(&replay.properties, "Team1Size")
+        .and_then(|v| v.as_i32())
+        .unwrap_or(0);
 
     // Print analysis results
     println!("\nGame Analysis:");
     println!("-------------");
-    println!("Engine Version: {}", analysis.engine_version);
-    println!("Score: {} - {}", analysis.game_score.team_0_score, analysis.game_score.team_1_score);
-    println!("Primary Player: {}", analysis.primary_player);
-    println!("Team Sizes: {} vs {}", analysis.team_sizes.blue, analysis.team_sizes.orange);
-    println!("Match Type: {}", analysis.match_type);
-    println!("Arena: {}", analysis.arena);
-    println!("Platform: {}", analysis.platform);
-    println!("Date: {}", analysis.date);
-    println!("Total Actor Updates: {}", analysis.actor_stats.total_updates);
+    println!("Engine Version: {}", engine_version);
+    println!("Score: {} - {}", team0_score, team1_score);
+    println!("Primary Player: {}", primary_player);
+    println!("Team Sizes: {} vs {}", team0_size, team1_size);
+    println!("Match Type: {}", match_type);
+    println!("Arena: {}", arena);
+    println!("Platform: {}", platform);
+    println!("Date: {}", date);
+    println!("Total Actor Updates: {}", total_actor_updates);
 
     Ok(())
 }
