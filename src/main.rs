@@ -2,7 +2,7 @@ use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
-use boxcars::{NetworkParse, ParseError};
+use boxcars::{NetworkParse};
 use crate::analyzer::analyze_replay;
 
 mod analyzer;
@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Parse the replay
     let replay = boxcars::ParserBuilder::new(&buffer)
-        .with_network_parse(NetworkParse::Full)
+        .with_network_parse(NetworkParse::Always)
         .parse()?;
 
     // Analyze the replay
