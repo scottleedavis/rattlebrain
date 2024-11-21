@@ -2,7 +2,8 @@ use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
-use boxcars::{NetworkParse};
+use std::path::Path;
+use boxcars::{NetworkParse, ParserBuilder};
 use crate::analyzer::analyze_replay;
 
 mod analyzer;
@@ -15,18 +16,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         std::process::exit(1);
     }
 
+    let file_path = &args[1];
+    let path = Path::new(file_path);
+
+    // Validate file existence
+    if !path.exists() {
+        eprintln!("Error: Replay file '{}' does not exist.", file_path);
+        std::process::exit(1);
+    }
+
     // Read the replay file
-    let mut file = File::open(&args[1])?;
+    let mut file = File::open(path)?;
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer)?;
 
     // Parse the replay
-    let replay = boxcars::ParserBuilder::new(&buffer)
+    let replay = ParserBuilder::new(&buffer)
         .with_network_parse(NetworkParse::Always)
-        .parse()?;
+        .parse()
+        .map_err(|e| {
+            eprintln!("Failed to parse replay file: {}", e);
+            e
+        })?;
 
     // Analyze the replay
-    let analysis = analyze_replay(&replay)?;
+    let analysis = analyze_replay(&replay).map_err(|e| {
+        eprintln!("Failed to analyze replay data: {}", e);
+        e
+    })?;
 
     // Print analysis results
     println!("\nGame Analysis:");
