@@ -1,77 +1,25 @@
-use std::env;
-use std::error::Error;
+use boxcars::ParserBuilder;
 use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use boxcars::{NetworkParse, ParserBuilder};
-use crate::analyzer::{
-    extract_primary_player, extract_match_type, extract_arena, extract_platform, extract_date,
-    get_property_value,
-};
+use std::io::{self, Read};
 
-mod analyzer;
+fn main() {
+    // Specify the file path (change this to the desired file path)
+    let file_path = "/mnt/c/Users/scott/Documents/workspace/rocket-league-replay-analysis-claude/test.replay";
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        eprintln!("Usage: {} <replay_file>", args[0]);
-        std::process::exit(1);
-    }
+    // Open the file and read its contents into a buffer
+    let mut file = File::open(file_path).expect("Failed to open file");
+    let mut data = Vec::new();
+    file.read_to_end(&mut data).expect("Failed to read file");
 
-    let file_path = &args[1];
-    let path = Path::new(file_path);
-
-    if !path.exists() {
-        eprintln!("Error: Replay file '{}' does not exist.", file_path);
-        std::process::exit(1);
-    }
-
-    let mut file = File::open(path)?;
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
-
-    let replay = ParserBuilder::new(&buffer)
-        .with_network_parse(NetworkParse::Always)
+    // Parse the replay data
+    let replay = ParserBuilder::new(&data)
+        .always_check_crc()
+        .must_parse_network_data()
         .parse()
-        .map_err(|e| {
-            eprintln!("Failed to parse replay file: {}", e);
-            e
-        })?;
+        .expect("Failed to parse replay");
 
-    let primary_player = extract_primary_player(&replay);
-    let match_type = extract_match_type(&replay);
-    let arena = extract_arena(&replay);
-    let platform = extract_platform(&replay);
-    let date = extract_date(&replay);
-    let total_actor_updates = replay.network_frames.len();
-
-    let engine_version = get_property_value(&replay.properties, "EngineVersion")
-        .and_then(|v| v.as_i32())
-        .unwrap_or(0);
-    let team0_score = get_property_value(&replay.properties, "Team0Score")
-        .and_then(|v| v.as_i32())
-        .unwrap_or(0);
-    let team1_score = get_property_value(&replay.properties, "Team1Score")
-        .and_then(|v| v.as_i32())
-        .unwrap_or(0);
-    let team0_size = get_property_value(&replay.properties, "Team0Size")
-        .and_then(|v| v.as_i32())
-        .unwrap_or(0);
-    let team1_size = get_property_value(&replay.properties, "Team1Size")
-        .and_then(|v| v.as_i32())
-        .unwrap_or(0);
-
-    println!("\nGame Analysis:");
-    println!("-------------");
-    println!("Engine Version: {}", engine_version);
-    println!("Score: {} - {}", team0_score, team1_score);
-    println!("Primary Player: {}", primary_player);
-    println!("Team Sizes: {} vs {}", team0_size, team1_size);
-    println!("Match Type: {}", match_type);
-    println!("Arena: {}", arena);
-    println!("Platform: {}", platform);
-    println!("Date: {}", date);
-    println!("Total Actor Updates: {}", total_actor_updates);
-
-    Ok(())
+    // Write the parsed replay data as pretty JSON to stdout
+    let stdout = io::stdout();
+    let mut out = stdout.lock();
+    serde_json::to_writer_pretty(&mut out, &replay).expect("Failed to write JSON");
 }
