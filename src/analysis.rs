@@ -47,11 +47,10 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Parses the header into a structured JSON object.
 fn parse_header(data: &Value) -> Value {
     let properties = data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null);
 
-    json!({
+    let header = json!({
         "engine_version": data.pointer("/header/body/engine_version").unwrap_or(&Value::Null),
         "team_size": find_property(properties, "TeamSize").unwrap_or(Value::Null),
         "team_1_score": find_property(properties, "Team1Score").unwrap_or(Value::Null),
@@ -60,10 +59,14 @@ fn parse_header(data: &Value) -> Value {
         "unfair_team_size": find_property(properties, "UnfairTeamSize").unwrap_or(Value::Null),
         "patch_version": data.pointer("/header/body/patch_version").unwrap_or(&Value::Null),
         "team_0_score": find_property(properties, "Team0Score").unwrap_or(Value::Null),
-    })
+    });
+
+    println!("Debug: Header JSON = {}", header);
+    header
 }
 
-/// Helper function to find a property by its name in a JSON array.
+
+
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
         .as_array()
@@ -71,16 +74,16 @@ fn find_property(array: &Value, key: &str) -> Option<Value> {
             elements.iter().find_map(|e| {
                 if e.get(0)?.as_str()? == key {
                     let value = e.get(1)?.get("value")?;
-                    match value {
-                        Value::Object(map) if map.contains_key("int") => map.get("int").cloned(),
-                        _ => Some(value.clone()),
-                    }
+                    // Extract and return only the nested "int" or "str" value directly
+                    value.get("int").or_else(|| value.get("str")).cloned()
                 } else {
                     None
                 }
             })
         })
 }
+
+
 
 /// Helper function to parse an array of structured objects.
 fn parse_array(array: &Value, keys: &[&str]) -> Vec<Value> {
