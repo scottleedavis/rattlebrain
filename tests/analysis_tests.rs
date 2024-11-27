@@ -38,8 +38,8 @@ fn test_analyze_replay() {
     assert!(Path::new(&player_stats_file).exists(), "Player stats file does not exist");
     assert!(Path::new(&highlights_file).exists(), "Highlights file does not exist");
 
-    fs::remove_file(&header_file).expect("Failed to delete header file");
-    fs::remove_file(&goals_file).expect("Failed to delete goals file");
-    fs::remove_file(&player_stats_file).expect("Failed to delete player stats file");
-    fs::remove_file(&highlights_file).expect("Failed to delete highlights file");
+//     fs::remove_file(&header_file).expect("Failed to delete header file");
+//     fs::remove_file(&goals_file).expect("Failed to delete goals file");
+//     fs::remove_file(&player_stats_file).expect("Failed to delete player stats file");
+//     fs::remove_file(&highlights_file).expect("Failed to delete highlights file");
 }
