@@ -21,7 +21,7 @@ jobs:
         wget -q https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz
         tar -xzf rattletrap-14.0.0-linux-x64.tar.gz
         chmod +x rattletrap
-        mv rattletrap ./rattletrap
+        pwd
 
     - name: Clean Up
       run: |
