@@ -1,4 +1,4 @@
-mod replay_parser;
+mod extract;
 mod analysis; 
 mod ai;
 
@@ -26,7 +26,7 @@ fn main() {
             let input = &args[2];
             let output = &args[3];
             println!("Extracting replay data...");
-            match replay_parser::extract_replay(input, output) {
+            match extract::extract_replay(input, output) {
                 Ok(_) => println!("Extract command completed successfully."),
                 Err(e) => eprintln!("Error extracting replay: {}", e),
             }
