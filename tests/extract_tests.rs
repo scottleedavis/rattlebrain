@@ -64,7 +64,7 @@ fn test_extract_replay_json_schema_validation() {
 #[test]
 fn test_extract_invalid_replay() {
     let invalid_replay_path = "tests/invalid.replay";
-    let output_path = "tests/output.csv";
+    let output_path = "tests/output.json";
 
     // Create a dummy invalid replay file
     let mut file = File::create(invalid_replay_path).unwrap();
