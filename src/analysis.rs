@@ -36,6 +36,9 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     );
     save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
+    // let frames = parse_frames(&data);
+    // save_to_file(&Value::Array(frames), output_dir, &match_guid, "frames")?;
+
     Ok(())
 }
 
@@ -191,6 +194,89 @@ fn parse_highlights(elements: &Value) -> Vec<Value> {
         })
         .unwrap_or_default()
 }
+
+
+// fn parse_frames(data: &Value) -> Vec<Value> {
+//     let frames = data.pointer("/body/frames").unwrap_or(&Value::Array(vec![]));
+//     let empty_vec = vec![];
+//     let mut actors = serde_json::Map::new();
+
+//     frames
+//         .as_array()
+//         .unwrap_or(&empty_vec) // Ensure frames is an array
+//         .iter()
+//         .map(|frame| {
+//             let mut frame_map = serde_json::Map::new();
+
+//             // Extract `delta`
+//             if let Some(delta) = frame.get("delta") {
+//                 frame_map.insert("delta".to_string(), delta.clone());
+//             }
+
+//             // Extract `replications`
+//             let replications = frame
+//                 .get("replications")
+//                 .and_then(|r| r.as_array())
+//                 .unwrap_or(&empty_vec)
+//                 .iter()
+//                 .map(|replication| {
+//                     let mut replication_map = serde_json::Map::new();
+
+//                     if let Some(actor_id) = replication.pointer("/actor_id/value") {
+//                         let actor_id_str = actor_id.to_string();
+
+//                         // Handle `object_name` and its specific cases
+//                         if let Some(object_name) = replication.pointer("/value/spawned/class_name").and_then(|v| v.as_str()) {
+//                             match object_name {
+//                                 "Engine.Actor:RemoteRole" => {
+//                                     if let Some(remote_role) = replication.pointer("/value/enum") {
+//                                         actors.entry(actor_id_str.clone())
+//                                             .or_insert_with(serde_json::Map::new)
+//                                             .insert("remote_role".to_string(), remote_role.clone());
+//                                     }
+//                                 }
+//                                 "TAGame.PRI_TA:PersistentCamera" |
+//                                 "TAGame.CameraSettingsActor_TA:PRI" |
+//                                 "TAGame.Ball_TA:GameEvent" |
+//                                 "TAGame.CarComponent_TA:Vehicle" |
+//                                 "Engine.Pawn:PlayerReplicationInfo" => {
+//                                     if let Some(flagged_int) = replication.pointer("/value/flagged_int/int") {
+//                                         actors.entry(actor_id_str.clone())
+//                                             .or_insert_with(serde_json::Map::new)
+//                                             .entry("parent_ids".to_string())
+//                                             .or_insert_with(|| Value::Array(vec![]))
+//                                             .as_array_mut()
+//                                             .unwrap()
+//                                             .push(flagged_int.clone());
+//                                     }
+//                                 }
+//                                 "TAGame.CarComponent_Boost_TA:ReplicatedBoost" => {
+//                                     if let Some(boost_amount) = replication.pointer("/value/boost/boostAmount") {
+//                                         actors.entry(actor_id_str.clone())
+//                                             .or_insert_with(serde_json::Map::new)
+//                                             .insert("boost".to_string(), boost_amount.clone());
+//                                     }
+//                                 }
+//                                 // Add more cases here as needed
+//                                 _ => {
+//                                     // Handle unrecognized cases or pass
+//                                     println!("Unrecognized object_name: {}", object_name);
+//                                 }
+//                             }
+//                         }
+
+//                         replication_map.insert("actor_id".to_string(), actor_id.clone());
+//                     }
+
+//                     Value::Object(replication_map)
+//                 })
+//                 .collect::<Vec<Value>>();
+
+//             frame_map.insert("replications".to_string(), Value::Array(replications));
+//             Value::Object(frame_map)
+//         })
+//         .collect()
+// }
 
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array

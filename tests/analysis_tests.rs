@@ -39,3 +39,40 @@ fn test_analyze_replay_with_valid_json() {
     println!("Header content: {}", header_content);
 }
 
+// #[test]
+// fn test_parse_frames_with_object_names() {
+//     let example_json = json!({
+//         "body": {
+//             "frames": [
+//                 {
+//                     "delta": 0,
+//                     "replications": [
+//                         {
+//                             "actor_id": { "limit": 2046, "value": 0 },
+//                             "value": {
+//                                 "spawned": {
+//                                     "class_name": "TAGame.CarComponent_Boost_TA:ReplicatedBoost",
+//                                     "flag": true,
+//                                     "initialization": { "location": null, "rotation": null },
+//                                     "name": "BoostComponent",
+//                                     "object_id": 1,
+//                                     "object_name": "BoostComponent_1"
+//                                 },
+//                                 "boost": { "boostAmount": 100 }
+//                             }
+//                         }
+//                     ]
+//                 }
+//             ]
+//         }
+//     });
+
+//     let frames = parse_frames(&example_json);
+//     assert_eq!(frames.len(), 1);
+//     assert_eq!(frames[0]["delta"], json!(0));
+//     let replications = frames[0]["replications"].as_array().unwrap();
+//     assert_eq!(replications.len(), 1);
+//     assert_eq!(replications[0]["actor_id"], json!(0));
+// }
+
+
