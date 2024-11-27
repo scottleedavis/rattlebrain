@@ -8,8 +8,8 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
         data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
         "MatchGuid",
     )
-    .and_then(|v| v.as_str())
-    .unwrap_or("unknown_match_guid");
+    .and_then(|v| v.as_str().map(|s| s.to_string()))
+    .unwrap_or_else(|| "unknown_match_guid".to_string());
 
 
     // Ensure the output directory exists
@@ -18,7 +18,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
 
     // Parse Header
     let header_map = parse_header(&data);
-    save_to_file(&header_map, output_dir, match_guid, "header")?;
+    save_to_file(&header_map, output_dir, &match_guid, "header")?;
 
     // Parse and save Goals
     let goals = parse_array(
@@ -26,7 +26,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "PlayerName", "PlayerTeam"],
     );
-    save_to_file(&Value::Array(goals), output_dir, match_guid, "goals")?;
+    save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
 
     // Parse and save PlayerStats
     let player_stats = parse_array(
@@ -36,7 +36,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             "Name", "Platform", "Team", "Score", "Goals", "Assists", "Saves", "Shots", "bBot",
         ],
     );
-    save_to_file(&Value::Array(player_stats), output_dir, match_guid, "player_stats")?;
+    save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
 
     // Parse and save Highlights
     let highlights = parse_array(
@@ -44,7 +44,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "CarName", "BallName", "GoalActorName"],
     );
-    save_to_file(&Value::Array(highlights), output_dir, match_guid, "highlights")?;
+    save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
     Ok(())
 }
