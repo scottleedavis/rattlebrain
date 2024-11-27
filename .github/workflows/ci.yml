@@ -16,10 +16,16 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
-    - name: Download Rattletrap
+    - name: Download and Extract Rattletrap
       run: |
-        wget -q https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-linux
-        chmod +x rattletrap-linux
-        mv rattletrap-linux ./rattletrap
+        wget -q https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz
+        tar -xzf rattletrap-14.0.0-linux-x64.tar.gz
+        chmod +x rattletrap
+        mv rattletrap ./rattletrap
+
+    - name: Clean Up
+      run: |
+        rm rattletrap-14.0.0-linux-x64.tar.gz
+
     - name: Run tests
       run: cargo test --verbose
