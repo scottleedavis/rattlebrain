@@ -207,24 +207,6 @@ fn find_property(array: &Value, key: &str) -> Option<Value> {
         })
 }
 
-/// Helper function to parse an array of structured objects.
-fn parse_array(array: &Value, keys: &[&str]) -> Vec<Value> {
-    array
-        .as_array()
-        .unwrap_or(&vec![])
-        .iter()
-        .map(|entry| {
-            let mut map = serde_json::Map::new();
-            for key in keys {
-                if let Some(value) = entry.pointer(&format!("/elements/{}", key)) {
-                    map.insert((*key).to_string(), value.clone());
-                }
-            }
-            Value::Object(map)
-        })
-        .collect()
-}
-
 /// Helper function to save a JSON object to a file.
 fn save_to_file(
     data: &Value,
