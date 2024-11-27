@@ -1,21 +1,15 @@
 [package]
-name = "rocket-league-analyzer"
+name = "rocket-league-replay-ai-analysis"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
-description = "A Rocket League replay analyzer using Claude AI"
+authors = ["Scott Davis <scottleedavisl@gmail.com>"]
+description = "A Rocket League replay analyzer using Multiple AI agents"
 license = "MIT"
-repository = "https://github.com/yourusername/rocket-league-analyzer"
+repository = "https://github.com/yourusername/rocket-league-ai-analysis"
 
 [dependencies]
-tokio = { version = "1.28", features = ["full"] }
-reqwest = { version = "0.11", features = ["json"] }
+csv = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json"] }
 dotenv = "0.15"
-thiserror = "1.0"
-clap = { version = "4.4", features = ["derive"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
-boxcars = "0.9.16"
-chrono = "0.4"
+tokio = { version = "1", features = ["full"] }

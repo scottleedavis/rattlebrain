@@ -78,6 +78,26 @@ Copilot
 - ..
 
 
+## Testing
+
+Extract Replay Data:
+```bash
+cargo run extract path/to/sample.replay output.csv
+```
+
+Analyze Replay:
+```bash
+cargo run analyze path/to/sample.replay
+```
+
+Generate AI Feedback:
+```bash
+cargo run ai "Analyze the replay data"
+```
+
+Ensure .env is set up properly.
+Test with one or both API keys to ensure fallback mechanisms work.
+
 ## Contributing
 
 1. Fork the repository
