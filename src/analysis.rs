@@ -4,10 +4,13 @@ use std::fs;
 /// Analyzes the replay and extracts data into structured JSON files.
 pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     // Match GUID for file naming
-    let match_guid = data
-        .pointer("/header/body/properties/MatchGuid/value/str")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown_match_guid");
+    let match_guid = find_property(
+        data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
+        "MatchGuid",
+    )
+    .and_then(|v| v.as_str())
+    .unwrap_or("unknown_match_guid");
+
 
     // Ensure the output directory exists
     let output_dir = "output";
@@ -62,7 +65,6 @@ fn parse_header(data: &Value) -> Value {
     })
 }
 
-/// Helper function to find a property by its name in a JSON array.
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
         .as_array()

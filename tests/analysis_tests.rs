@@ -1,66 +1,47 @@
 use rocket_league_replay_ai_analysis::analysis::analyze_replay;
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::{fs, path::Path};
 
 #[test]
-fn test_analyze_replay() {
-    let example_json = json!({
-        "header": {
-            "body": {
-                "engine_version": 868,
-                "licensee_version": 32,
-                "patch_version": 10,
-                "properties": {
-                    "MatchGuid": { "value": { "str": "test_match_guid" } },
-                    "Goals": { "value": { "array": [] } },
-                    "PlayerStats": { "value": { "array": [] } },
-                    "HighLights": { "value": { "array": [] } },
-                    "elements": [
-                        ["TeamSize", { "value": { "int": 3 } }],
-                        ["UnfairTeamSize", { "value": { "int": 1 } }],
-                        ["Team1Score", { "value": { "int": 4 } }],
-                        ["Team0Score", { "value": { "int": 5 } }],
-                        ["PrimaryPlayerTeam", { "value": { "int": 0 } }]
-                    ]
-                }
-            }
-        }
-    });
+fn test_analyze_replay_with_valid_json() {
+    // Read the valid.json file
+    let valid_json_path = "tests/valid.json";
+    let valid_json_content = fs::read_to_string(valid_json_path)
+        .expect("Failed to read valid.json file");
 
+    // Parse the JSON content
+    let example_json: Value = serde_json::from_str(&valid_json_content)
+        .expect("Failed to parse valid.json content");
+
+    // Analyze the replay
     analyze_replay(example_json).expect("Failed to analyze replay");
 
+    // Define output directory and expected files
     let output_dir = "output";
-    let header_file = format!("{}/test_match_guid.header.json", output_dir);
+    let match_guid = "test_match_guid"; // Ensure this matches the MatchGuid in valid.json
+    let header_file = format!("{}/{}.header.json", output_dir, match_guid);
+    let goals_file = format!("{}/{}.goals.json", output_dir, match_guid);
+    let player_stats_file = format!("{}/{}.player_stats.json", output_dir, match_guid);
+    let highlights_file = format!("{}/{}.highlights.json", output_dir, match_guid);
 
     // Ensure files exist
     assert!(Path::new(&header_file).exists(), "Header file does not exist");
+    assert!(Path::new(&goals_file).exists(), "Goals file does not exist");
+    assert!(Path::new(&player_stats_file).exists(), "Player stats file does not exist");
+    assert!(Path::new(&highlights_file).exists(), "Highlights file does not exist");
 
-    // Read and validate header file content
+    // Optionally, read and validate the content of the output files
+    // For example, to validate the header file content:
     let header_content: Value = serde_json::from_str(&fs::read_to_string(&header_file).unwrap())
         .expect("Failed to parse header file");
-    assert_eq!(
-        header_content["team_size"].as_i64(),
-        Some(3),
-        "team_size is incorrect"
-    );
-    assert_eq!(
-        header_content["unfair_team_size"].as_i64(),
-        Some(1),
-        "unfair_team_size is incorrect"
-    );
-    assert_eq!(
-        header_content["team_1_score"].as_i64(),
-        Some(4),
-        "team_1_score is incorrect"
-    );
-    assert_eq!(
-        header_content["team_0_score"].as_i64(),
-        Some(5),
-        "team_0_score is incorrect"
-    );
-    assert_eq!(
-        header_content["primary_player_team"].as_i64(),
-        Some(0),
-        "primary_player_team is incorrect"
-    );
+    assert_eq!(header_content["engine_version"], 868);
+    assert_eq!(header_content["licensee_version"], 32);
+    assert_eq!(header_content["patch_version"], 10);
+    assert_eq!(header_content["team_size"], 3);
+    assert_eq!(header_content["unfair_team_size"], 1);
+    assert_eq!(header_content["team_1_score"], 4);
+    assert_eq!(header_content["team_0_score"], 5);
+    assert_eq!(header_content["primary_player_team"], 0);
+
+    // Similar validations can be added for goals, player_stats, and highlights
 }
