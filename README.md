@@ -65,18 +65,17 @@ Claude
 - `CLAUDE_API_KEY`: Your Claude API key
 - `RL_ANALYZER_MODEL`: Claude model to use (default: "claude-3-sonnet-20240229")
 - `RL_ANALYZER_LOG_LEVEL`: Log level (default: "info")
+
 ChatGPT
 -`OPENAI_API_KEY`: Your ChatGPT API key 
--
--
+- ..
+
 Gemini
-- 
--
--
+- ..
+
 Copilot
--
--
--
+- ..
+
 
 ## Contributing
 
