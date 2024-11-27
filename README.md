@@ -82,17 +82,7 @@ Copilot
 
 Extract Replay Data:
 ```bash
-cargo run extract path/to/sample.replay output.csv
-```
-
-Analyze Replay:
-```bash
-cargo run analyze path/to/sample.replay
-```
-
-Generate AI Feedback:
-```bash
-cargo run ai "Analyze the replay data"
+cargo test
 ```
 
 Ensure .env is set up properly.
