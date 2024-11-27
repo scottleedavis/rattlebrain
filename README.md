@@ -1,6 +1,7 @@
 # rocket-league-ai-analysis
 
-A command-line tool that analyzes Rocket League replay files using one or more AI services. This tool extracts meaningful insights, tactical analysis, and performance metrics from your replays.
+A command-line fully Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  I utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
+It provides nified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
 
 ## Features
 
