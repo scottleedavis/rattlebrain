@@ -2,7 +2,6 @@ use serde_json::{json, Value};
 use std::fs;
 
 /// Analyzes the replay and extracts data into structured JSON files.
-/// Returns a Result to propagate errors if any occur.
 pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     // Match GUID for file naming
     let match_guid = data
@@ -24,7 +23,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "PlayerName", "PlayerTeam"],
     );
-    save_to_file(&Value::Array(goals), output_dir, match_guid, "goals")?; // Convert Vec<Value> to Value::Array
+    save_to_file(&Value::Array(goals), output_dir, match_guid, "goals")?;
 
     // Parse and save PlayerStats
     let player_stats = parse_array(
@@ -34,7 +33,7 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             "Name", "Platform", "Team", "Score", "Goals", "Assists", "Saves", "Shots", "bBot",
         ],
     );
-    save_to_file(&Value::Array(player_stats), output_dir, match_guid, "player_stats")?; // Convert Vec<Value> to Value::Array
+    save_to_file(&Value::Array(player_stats), output_dir, match_guid, "player_stats")?;
 
     // Parse and save Highlights
     let highlights = parse_array(
@@ -42,15 +41,16 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "CarName", "BallName", "GoalActorName"],
     );
-    save_to_file(&Value::Array(highlights), output_dir, match_guid, "highlights")?; // Convert Vec<Value> to Value::Array
+    save_to_file(&Value::Array(highlights), output_dir, match_guid, "highlights")?;
 
     Ok(())
 }
 
+/// Parses the header into a structured JSON object.
 fn parse_header(data: &Value) -> Value {
     let properties = data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null);
 
-    let header = json!({
+    json!({
         "engine_version": data.pointer("/header/body/engine_version").unwrap_or(&Value::Null),
         "team_size": find_property(properties, "TeamSize").unwrap_or(Value::Null),
         "team_1_score": find_property(properties, "Team1Score").unwrap_or(Value::Null),
@@ -59,14 +59,10 @@ fn parse_header(data: &Value) -> Value {
         "unfair_team_size": find_property(properties, "UnfairTeamSize").unwrap_or(Value::Null),
         "patch_version": data.pointer("/header/body/patch_version").unwrap_or(&Value::Null),
         "team_0_score": find_property(properties, "Team0Score").unwrap_or(Value::Null),
-    });
-
-    println!("Debug: Header JSON = {}", header);
-    header
+    })
 }
 
-
-
+/// Helper function to find a property by its name in a JSON array.
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
         .as_array()
@@ -74,7 +70,6 @@ fn find_property(array: &Value, key: &str) -> Option<Value> {
             elements.iter().find_map(|e| {
                 if e.get(0)?.as_str()? == key {
                     let value = e.get(1)?.get("value")?;
-                    // Extract and return only the nested "int" or "str" value directly
                     value.get("int").or_else(|| value.get("str")).cloned()
                 } else {
                     None
@@ -82,8 +77,6 @@ fn find_property(array: &Value, key: &str) -> Option<Value> {
             })
         })
 }
-
-
 
 /// Helper function to parse an array of structured objects.
 fn parse_array(array: &Value, keys: &[&str]) -> Vec<Value> {
