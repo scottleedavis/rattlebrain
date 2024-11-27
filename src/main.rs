@@ -1,4 +1,4 @@
-// use std::env;
+mod replay_parser;
 
 use std::env;
 
@@ -17,16 +17,25 @@ fn main() {
     let command = &args[1];
     match command.as_str() {
         "extract" => {
+            if args.len() < 4 {
+                println!("Usage: rocket-league-replay-ai-analysis extract <input> <output>");
+                return;
+            }
+            let input = &args[2];
+            let output = &args[3];
             println!("Extracting replay data...");
-            // Placeholder for `extract` functionality
+            match replay_parser::extract_replay(input, output) {
+                Ok(_) => println!("Extract command completed successfully."),
+                Err(e) => eprintln!("Error extracting replay: {}", e),
+            }
         }
         "analyze" => {
             println!("Analyzing replay...");
-            // Placeholder for `analyze` functionality
+            // Placeholder for analyze functionality
         }
         "ai" => {
             println!("Querying AI...");
-            // Placeholder for `ai` functionality
+            // Placeholder for AI functionality
         }
         _ => {
             println!("Unknown command: {}", command);
