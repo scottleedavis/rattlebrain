@@ -1,5 +1,6 @@
 mod replay_parser;
-mod analysis;
+mod analysis; 
+mod ai;
 
 use std::env;
 
@@ -10,7 +11,7 @@ fn main() {
         println!("Usage: rocket-league-replay-ai-analysis <command> [options]");
         println!("Commands:");
         println!("  extract <input> <output> - Extract replay data to CSV.");
-        println!("  analyze <input>          - Analyze replay data.");
+        println!("  analysis <input>          - Analyze replay data.");
         println!("  ai <query>               - Query AI for replay insights.");
         return;
     }
@@ -30,20 +31,27 @@ fn main() {
                 Err(e) => eprintln!("Error extracting replay: {}", e),
             }
         }
-        "analysis" => {
+        "analysis" => { 
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis analyze <input>");
+                println!("Usage: rocket-league-replay-ai-analysis analysis <input>");
                 return;
             }
             let input = &args[2];
             match analysis::analyze_replay(input) {
-                Ok(_) => println!("Analyze command completed successfully."),
+                Ok(_) => println!("Analysis command completed successfully."),
                 Err(e) => eprintln!("Error analyzing replay: {}", e),
             }
         }
         "ai" => {
-            println!("Querying AI...");
-            // Placeholder for AI functionality
+            if args.len() < 3 {
+                println!("Usage: rocket-league-replay-ai-analysis ai <query>");
+                return;
+            }
+            let query = &args[2];
+            match ai::query_ai(query) {
+                Ok(response) => println!("{}", response),
+                Err(e) => eprintln!("Error querying AI: {}", e),
+            }
         }
         _ => {
             println!("Unknown command: {}", command);

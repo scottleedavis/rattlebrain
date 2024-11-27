@@ -1,9 +1,9 @@
 #[cfg(test)]
-mod analyze_tests {
+mod analysis_tests {
     use std::process::Command;
 
     #[test]
-    fn test_analyze_replay() {
+    fn test_analysis_command() {
         let output = Command::new("cargo")
             .args(&["run", "--", "analysis", "examples/sample.replay"])
             .output()
