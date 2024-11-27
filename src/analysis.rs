@@ -57,32 +57,39 @@ fn parse_header(data: &Value) -> Value {
     })
 }
 
-fn parse_goals(array: &Value) -> Vec<Value> {
-    array
-        .as_array()
-        .unwrap_or(&vec![])
-        .iter()
-        .filter_map(|goal| {
-            goal.get("elements").and_then(|elements| {
-                elements.as_array().map(|fields| {
-                    let mut goal_map = serde_json::Map::new();
-                    for field in fields {
-                        if let Some(key) = field.get(0).and_then(|v| v.as_str()) {
-                            if let Some(value) = field.get(1).and_then(|v| v.get("value")) {
-                                if let Some(int_value) = value.get("int") {
-                                    goal_map.insert(key.to_string(), int_value.clone());
-                                } else if let Some(str_value) = value.get("str") {
-                                    goal_map.insert(key.to_string(), str_value.clone());
+fn parse_goals(goals_array: &Value) -> Vec<Value> {
+    goals_array
+        .get("value") // Navigate to the `value` field
+        .and_then(|v| v.get("array")) // Extract the `array`
+        .and_then(|arr| arr.as_array()) // Ensure it is an array
+        .map(|array| {
+            array
+                .iter()
+                .filter_map(|goal| {
+                    // Extract the `elements` array for each goal
+                    goal.get("elements")
+                        .and_then(|elements| elements.as_array())
+                        .map(|fields| {
+                            let mut goal_map = serde_json::Map::new();
+                            for field in fields {
+                                if let Some(key) = field.get(0).and_then(|v| v.as_str()) {
+                                    if let Some(value) = field.get(1).and_then(|v| v.get("value")) {
+                                        if let Some(int_value) = value.get("int") {
+                                            goal_map.insert(key.to_string(), int_value.clone());
+                                        } else if let Some(str_value) = value.get("str") {
+                                            goal_map.insert(key.to_string(), str_value.clone());
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                    Value::Object(goal_map)
+                            Value::Object(goal_map)
+                        })
                 })
-            })
+                .collect()
         })
-        .collect()
+        .unwrap_or_default() // Return an empty vector if parsing fails
 }
+
 
 
 fn find_property(array: &Value, key: &str) -> Option<Value> {
