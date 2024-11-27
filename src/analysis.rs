@@ -17,24 +17,22 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     save_to_file(&header_map, output_dir, &match_guid, "header")?;
 
     let goals = parse_goals(
-        data.pointer("/header/body/properties/Goals/value/array")
+        data.pointer("/header/body/properties/elements")
             .unwrap_or(&Value::Array(vec![])),
     );
     save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
 
-    let player_stats = parse_array(
-        data.pointer("/header/body/properties/PlayerStats/value/array")
+
+    let player_stats = parse_player_stats(
+        data.pointer("/header/body/properties/elements")
             .unwrap_or(&Value::Array(vec![])),
-        &[
-            "Name", "Platform", "Team", "Score", "Goals", "Assists", "Saves", "Shots", "bBot",
-        ],
     );
     save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
 
-    let highlights = parse_array(
-        data.pointer("/header/body/properties/HighLights/value/array")
+
+    let highlights = parse_highlights(
+        data.pointer("/header/body/properties/elements")
             .unwrap_or(&Value::Array(vec![])),
-        &["frame", "CarName", "BallName", "GoalActorName"],
     );
     save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
@@ -57,16 +55,32 @@ fn parse_header(data: &Value) -> Value {
     })
 }
 
-fn parse_goals(goals_array: &Value) -> Vec<Value> {
-    goals_array
-        .get("value") // Navigate to the `value` field
-        .and_then(|v| v.get("array")) // Extract the `array`
-        .and_then(|arr| arr.as_array()) // Ensure it is an array
+fn parse_goals(elements: &Value) -> Vec<Value> {
+    println!("Debug: Full elements = {:?}", elements); // Debug the input
+
+    // Create a longer-lived empty vector
+    let empty_vec = vec![];
+    let goals_property = elements
+        .as_array()
+        .unwrap_or(&empty_vec) // Use the longer-lived empty vector here
+        .iter()
+        .find(|item| item.get(0).and_then(|v| v.as_str()) == Some("Goals"));
+
+    println!("Debug: Found Goals Property = {:?}", goals_property); // Debug the "Goals" property
+
+    let goals_array = goals_property
+        .and_then(|item| item.get(1)) // Access the second element in the "Goals" property
+        .and_then(|details| details.get("value")) // Access the "value" field
+        .and_then(|value| value.get("array")); // Access the "array" field
+
+    println!("Debug: Extracted Goals Array = {:?}", goals_array); // Debug the raw goals array
+
+    let parsed_goals = goals_array
+        .and_then(|array| array.as_array()) // Ensure it's an array
         .map(|array| {
             array
                 .iter()
                 .filter_map(|goal| {
-                    // Extract the `elements` array for each goal
                     goal.get("elements")
                         .and_then(|elements| elements.as_array())
                         .map(|fields| {
@@ -87,10 +101,96 @@ fn parse_goals(goals_array: &Value) -> Vec<Value> {
                 })
                 .collect()
         })
-        .unwrap_or_default() // Return an empty vector if parsing fails
+        .unwrap_or_default(); // Default to an empty vector if parsing fails
+
+    println!("Debug: Parsed Goals = {:?}", parsed_goals); // Debug the parsed goals
+
+    parsed_goals
 }
 
+fn parse_player_stats(elements: &Value) -> Vec<Value> {
+    let empty_vec = vec![]; // Create a longer-lived empty vector
+    let player_stats_property = elements
+        .as_array()
+        .unwrap_or(&empty_vec) // Use the longer-lived empty vector
+        .iter()
+        .find(|item| item.get(0).and_then(|v| v.as_str()) == Some("PlayerStats"));
 
+    let player_stats_array = player_stats_property
+        .and_then(|item| item.get(1))
+        .and_then(|details| details.get("value"))
+        .and_then(|value| value.get("array"));
+
+    player_stats_array
+        .and_then(|array| array.as_array())
+        .map(|array| {
+            array
+                .iter()
+                .map(|entry| {
+                    let mut map = serde_json::Map::new();
+                    if let Some(elements) = entry.get("elements").and_then(|v| v.as_array()) {
+                        for key in &["Name", "Platform", "Team", "Score", "Goals", "Assists", "Saves", "Shots", "bBot"] {
+                            if let Some(value) = elements.iter().find_map(|field| {
+                                field.get(0).and_then(|k| {
+                                    if k.as_str() == Some(key) {
+                                        field.get(1).and_then(|v| v.get("value"))
+                                    } else {
+                                        None
+                                    }
+                                })
+                            }) {
+                                map.insert((*key).to_string(), value.clone());
+                            }
+                        }
+                    }
+                    Value::Object(map)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn parse_highlights(elements: &Value) -> Vec<Value> {
+    let empty_vec = vec![]; // Create a longer-lived empty vector
+    let highlights_property = elements
+        .as_array()
+        .unwrap_or(&empty_vec) // Use the longer-lived empty vector
+        .iter()
+        .find(|item| item.get(0).and_then(|v| v.as_str()) == Some("HighLights"));
+
+    let highlights_array = highlights_property
+        .and_then(|item| item.get(1))
+        .and_then(|details| details.get("value"))
+        .and_then(|value| value.get("array"));
+
+    highlights_array
+        .and_then(|array| array.as_array())
+        .map(|array| {
+            array
+                .iter()
+                .map(|entry| {
+                    let mut map = serde_json::Map::new();
+                    if let Some(elements) = entry.get("elements").and_then(|v| v.as_array()) {
+                        for key in &["frame", "CarName", "BallName", "GoalActorName"] {
+                            if let Some(value) = elements.iter().find_map(|field| {
+                                field.get(0).and_then(|k| {
+                                    if k.as_str() == Some(key) {
+                                        field.get(1).and_then(|v| v.get("value"))
+                                    } else {
+                                        None
+                                    }
+                                })
+                            }) {
+                                map.insert((*key).to_string(), value.clone());
+                            }
+                        }
+                    }
+                    Value::Object(map)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
 
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
