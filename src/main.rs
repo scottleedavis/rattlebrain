@@ -1,4 +1,5 @@
 mod replay_parser;
+mod analysis;
 
 use std::env;
 
@@ -29,9 +30,16 @@ fn main() {
                 Err(e) => eprintln!("Error extracting replay: {}", e),
             }
         }
-        "analyze" => {
-            println!("Analyzing replay...");
-            // Placeholder for analyze functionality
+        "analysis" => {
+            if args.len() < 3 {
+                println!("Usage: rocket-league-replay-ai-analysis analyze <input>");
+                return;
+            }
+            let input = &args[2];
+            match analysis::analyze_replay(input) {
+                Ok(_) => println!("Analyze command completed successfully."),
+                Err(e) => eprintln!("Error analyzing replay: {}", e),
+            }
         }
         "ai" => {
             println!("Querying AI...");
