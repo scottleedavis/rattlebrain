@@ -3,7 +3,6 @@ use std::fs;
 
 /// Analyzes the replay and extracts data into structured JSON files.
 pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
-    // Match GUID for file naming
     let match_guid = find_property(
         data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
         "MatchGuid",
@@ -11,24 +10,18 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     .and_then(|v| v.as_str().map(|s| s.to_string()))
     .unwrap_or_else(|| "unknown_match_guid".to_string());
 
-
-    // Ensure the output directory exists
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
-    // Parse Header
     let header_map = parse_header(&data);
     save_to_file(&header_map, output_dir, &match_guid, "header")?;
 
-    // Parse and save Goals
-    let goals = parse_array(
+    let goals = parse_goals(
         data.pointer("/header/body/properties/Goals/value/array")
             .unwrap_or(&Value::Array(vec![])),
-        &["frame", "PlayerName", "PlayerTeam"],
     );
     save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
 
-    // Parse and save PlayerStats
     let player_stats = parse_array(
         data.pointer("/header/body/properties/PlayerStats/value/array")
             .unwrap_or(&Value::Array(vec![])),
@@ -38,7 +31,6 @@ pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     );
     save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
 
-    // Parse and save Highlights
     let highlights = parse_array(
         data.pointer("/header/body/properties/HighLights/value/array")
             .unwrap_or(&Value::Array(vec![])),
@@ -64,6 +56,34 @@ fn parse_header(data: &Value) -> Value {
         "team_0_score": find_property(properties, "Team0Score").unwrap_or(Value::Null),
     })
 }
+
+fn parse_goals(array: &Value) -> Vec<Value> {
+    array
+        .as_array()
+        .unwrap_or(&vec![])
+        .iter()
+        .filter_map(|goal| {
+            goal.get("elements").and_then(|elements| {
+                elements.as_array().map(|fields| {
+                    let mut goal_map = serde_json::Map::new();
+                    for field in fields {
+                        if let Some(key) = field.get(0).and_then(|v| v.as_str()) {
+                            if let Some(value) = field.get(1).and_then(|v| v.get("value")) {
+                                if let Some(int_value) = value.get("int") {
+                                    goal_map.insert(key.to_string(), int_value.clone());
+                                } else if let Some(str_value) = value.get("str") {
+                                    goal_map.insert(key.to_string(), str_value.clone());
+                                }
+                            }
+                        }
+                    }
+                    Value::Object(goal_map)
+                })
+            })
+        })
+        .collect()
+}
+
 
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
