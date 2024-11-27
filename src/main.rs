@@ -50,7 +50,7 @@ fn main() {
             let query = &args[2];
             match ai::query_ai(query) {
                 Ok(response) => println!("{}", response),
-                Err(e) => eprintln!("Error querying AI: {}", e),
+                Err(e) => eprintln!("{}", e), // Ensure error is printed to `stderr`
             }
         }
         _ => {
