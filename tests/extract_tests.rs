@@ -6,11 +6,7 @@ use std::io::Write;
 #[test]
 fn test_extract_valid_replay() {
     let valid_replay_path = "tests/valid.replay";
-    let output_path = "tests/output.csv";
-
-    // Create a dummy valid replay file
-    let mut file = File::create(valid_replay_path).unwrap();
-    file.write_all(b"valid replay data").unwrap();
+    let output_path = "tests/output.json";
 
     // Call extract_replay
     let result = extract::extract_replay(valid_replay_path, output_path);
