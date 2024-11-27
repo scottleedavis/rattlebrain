@@ -18,7 +18,7 @@ jobs:
       run: cargo build --verbose
     - name: Download Rattletrap
       run: |
-        wget -q https://github.com/tfausak/rattletrap/releases/download/<version>/rattletrap-linux
+        wget -q https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-linux
         chmod +x rattletrap-linux
         mv rattletrap-linux ./rattletrap
     - name: Run tests
