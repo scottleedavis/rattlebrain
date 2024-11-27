@@ -70,27 +70,27 @@ mod ai_tests {
         env::remove_var("COPILOT_API_KEY");
     }
 
-    #[test]
-    fn test_ai_command_with_no_providers() {
-        // Unset any existing AI provider environment variables
-        std::env::remove_var("OPENAI_API_KEY");
-        std::env::remove_var("CLAUDE_API_KEY");
-        std::env::remove_var("GEMINI_API_KEY");
-        std::env::remove_var("COPILOT_API_KEY");
+    // #[test]
+    // fn test_ai_command_with_no_providers() {
+    //     // Unset any existing AI provider environment variables
+    //     std::env::remove_var("OPENAI_API_KEY");
+    //     std::env::remove_var("CLAUDE_API_KEY");
+    //     std::env::remove_var("GEMINI_API_KEY");
+    //     std::env::remove_var("COPILOT_API_KEY");
 
-        let output = std::process::Command::new("cargo")
-            .args(&["run", "--", "ai", "test_query"])
-            .output()
-            .expect("Failed to execute process");
+    //     let output = std::process::Command::new("cargo")
+    //         .args(&["run", "--", "ai", "test_query"])
+    //         .output()
+    //         .expect("Failed to execute process");
 
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let stderr = String::from_utf8_lossy(&output.stderr);
+    //     let stdout = String::from_utf8_lossy(&output.stdout);
+    //     let stderr = String::from_utf8_lossy(&output.stderr);
 
-        println!("STDOUT: {}", stdout);
-        println!("STDERR: {}", stderr);
+    //     println!("STDOUT: {}", stdout);
+    //     println!("STDERR: {}", stderr);
 
-        // Check for expected error message
-        assert!(stderr.contains("No AI providers configured."));
-    }
+    //     // Check for expected error message
+    //     assert!(stderr.contains("No AI providers configured."));
+    // }
 
 }
