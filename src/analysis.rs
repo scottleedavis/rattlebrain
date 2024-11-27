@@ -2,9 +2,9 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
 
-/// Analyzes the replay and extracts header, goals, player stats, and highlights,
-/// saving each as a separate JSON file.
-pub fn analyze_replay(data: Value) {
+/// Analyzes the replay and extracts data into structured JSON files.
+/// Returns a Result to propagate errors if any occur.
+pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     // Match GUID for file naming
     let match_guid = data
         .pointer("/header/body/properties/MatchGuid/value/str")
@@ -13,11 +13,11 @@ pub fn analyze_replay(data: Value) {
 
     // Ensure the output directory exists
     let output_dir = "output";
-    fs::create_dir_all(output_dir).expect("Failed to create output directory");
+    fs::create_dir_all(output_dir)?;
 
     // Parse Header
     let header_map = parse_header(&data);
-    save_to_file(&header_map, output_dir, match_guid, "header");
+    save_to_file(&header_map, output_dir, match_guid, "header")?;
 
     // Parse and save Goals
     let goals = parse_array(
@@ -25,7 +25,7 @@ pub fn analyze_replay(data: Value) {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "PlayerName", "PlayerTeam"],
     );
-    save_to_file(&goals, output_dir, match_guid, "goals");
+    save_to_file(&goals, output_dir, match_guid, "goals")?;
 
     // Parse and save PlayerStats
     let player_stats = parse_array(
@@ -35,7 +35,7 @@ pub fn analyze_replay(data: Value) {
             "Name", "Platform", "Team", "Score", "Goals", "Assists", "Saves", "Shots", "bBot",
         ],
     );
-    save_to_file(&player_stats, output_dir, match_guid, "player_stats");
+    save_to_file(&player_stats, output_dir, match_guid, "player_stats")?;
 
     // Parse and save Highlights
     let highlights = parse_array(
@@ -43,7 +43,9 @@ pub fn analyze_replay(data: Value) {
             .unwrap_or(&Value::Array(vec![])),
         &["frame", "CarName", "BallName", "GoalActorName"],
     );
-    save_to_file(&highlights, output_dir, match_guid, "highlights");
+    save_to_file(&highlights, output_dir, match_guid, "highlights")?;
+
+    Ok(())
 }
 
 /// Parses the header into a structured HashMap.
@@ -130,10 +132,14 @@ fn parse_array(array: &Value, keys: &[&str]) -> Vec<Value> {
 }
 
 /// Helper function to save a JSON object to a file.
-fn save_to_file(data: &impl serde::Serialize, output_dir: &str, match_guid: &str, section: &str) {
+fn save_to_file(
+    data: &impl serde::Serialize,
+    output_dir: &str,
+    match_guid: &str,
+    section: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let file_path = format!("{}/{}.{}.json", output_dir, match_guid, section);
-    fs::write(&file_path, serde_json::to_string_pretty(data).expect("Failed to serialize JSON"))
-        .expect(&format!("Failed to write file: {}", file_path));
+    fs::write(&file_path, serde_json::to_string_pretty(data)?)?;
     println!("Saved: {}", file_path);
+    Ok(())
 }
-

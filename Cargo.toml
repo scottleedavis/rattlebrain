@@ -15,3 +15,7 @@ dotenv = "0.15"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 jsonschema = "0.16"
+
+[lib]
+name = "rocket_league_replay_ai_analysis"
+path = "src/lib.rs"
