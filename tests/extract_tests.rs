@@ -14,7 +14,7 @@ fn test_extract_replay_json_schema_validation() {
     // Paths to the rattletrap binary, input replay, and output JSON
     let rattletrap_path = "./rattletrap"; // Adjust this path as needed
     let input_replay = "tests/valid.replay"; // Provide a valid replay file for testing
-    let output_json = "tests/output.json";
+    let output_json = "output/output_schema_test.json";
 
     // Run rattletrap to extract replay data to JSON
     let output_status = Command::new(rattletrap_path)
@@ -58,7 +58,7 @@ fn test_extract_replay_json_schema_validation() {
     }
 
     // Clean up
-    fs::remove_file(output_json).expect("Failed to remove output.json");
+    fs::remove_file(output_json).expect("Failed to remove output_schema_test.json");
 }
 
 
@@ -66,7 +66,7 @@ fn test_extract_replay_json_schema_validation() {
 #[test]
 fn test_extract_invalid_replay() {
     let invalid_replay_path = "tests/invalid.replay";
-    let output_path = "tests/output.json";
+    let output_path = "output/output.json";
 
     // Create a dummy invalid replay file
     let mut file = File::create(invalid_replay_path).unwrap();
@@ -84,16 +84,13 @@ fn test_extract_invalid_replay() {
 fn test_extract_replay_creates_files() {
 
     let input_replay = "tests/valid.replay"; 
-    let output_json = "tests/output";
-
-    match extract::extract_replay(input_replay, output_json) {
-        Ok(_) => println!("Extract command completed successfully."),
-        Err(e) => eprintln!("Error extracting replay: {}", e),
-    }
-
     let output_dir = "./output";
     let match_guid = "383F0B0411EFAC27082CAFA884251EFF";
-    let output_file = format!("{}/output.json", output_dir);
+    let output_file = format!("{}/output.json", output_dir).to_string();
+    match extract::extract_replay(input_replay, "output/output.json") {
+        Ok(_) => println!("Extract command completed successfully."),
+        Err(e) => eprintln!("Error extracting replay: {}", e),
+    } 
     let header_file = format!("{}/{}.header.json", output_dir, match_guid);
     let goals_file = format!("{}/{}.goals.json", output_dir, match_guid);
     let player_stats_file = format!("{}/{}.player_stats.json", output_dir, match_guid);

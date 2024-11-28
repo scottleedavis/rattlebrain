@@ -6,10 +6,8 @@ use std::collections::HashSet;
 
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
 pub fn extract_replay(input: &str, output: &str) -> io::Result<()> {
-    let rattletrap_path = "./rattletrap"; // Adjust this path if necessary
-
-    // Temporary JSON output from rattletrap
-    let json_output = format!("{}.json", output);
+    let rattletrap_path = "./rattletrap"; 
+    let json_output = format!("{}", output);
 
     // Run the rattletrap command
     let output_status = Command::new(rattletrap_path)
@@ -43,7 +41,7 @@ pub fn extract_replay(input: &str, output: &str) -> io::Result<()> {
         Err(e) => eprintln!("Error parsing replay: {}", e),
     };
 
-    println!("Replay data successfully written to {}", output);
+    // fs::remove_file(&json_output).expect("Failed to delete output file");
     Ok(())
 }
 
