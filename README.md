@@ -45,19 +45,12 @@ docker build -t rocket-league-replay-ai-analysis .
 
 1. Basic analysis:
 ```bash
-cargo run -- analyze path/to/replay.replay
+cargo run -- analysis path/to/replay.replay
 ```
 ```bash
 docker run rocket-league-replay-ai-analysis ...
 ```
 
-2. Detailed analysis with specific focus:
-```bash
-cargo run -- analyze --focus tactical path/to/replay.replay
-```
-```bash
-docker run rocket-league-replay-ai-analysis ...
-```
 ## Configuration
 
 The analyzer can be configured through command-line arguments or environment variables:

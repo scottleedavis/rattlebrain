@@ -1,5 +1,7 @@
 use serde_json::{json, Value};
 use std::fs;
+use std::collections::HashSet;
+
 
 /// Analyzes the replay and extracts data into structured JSON files.
 pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
@@ -59,7 +61,6 @@ fn parse_header(data: &Value) -> Value {
 }
 
 fn parse_goals(elements: &Value) -> Vec<Value> {
-    println!("Debug: Full elements = {:?}", elements); // Debug the input
 
     // Create a longer-lived empty vector
     let empty_vec = vec![];
@@ -69,14 +70,10 @@ fn parse_goals(elements: &Value) -> Vec<Value> {
         .iter()
         .find(|item| item.get(0).and_then(|v| v.as_str()) == Some("Goals"));
 
-    println!("Debug: Found Goals Property = {:?}", goals_property); // Debug the "Goals" property
-
     let goals_array = goals_property
         .and_then(|item| item.get(1)) // Access the second element in the "Goals" property
         .and_then(|details| details.get("value")) // Access the "value" field
         .and_then(|value| value.get("array")); // Access the "array" field
-
-    println!("Debug: Extracted Goals Array = {:?}", goals_array); // Debug the raw goals array
 
     let parsed_goals = goals_array
         .and_then(|array| array.as_array()) // Ensure it's an array
@@ -105,8 +102,6 @@ fn parse_goals(elements: &Value) -> Vec<Value> {
                 .collect()
         })
         .unwrap_or_default(); // Default to an empty vector if parsing fails
-
-    println!("Debug: Parsed Goals = {:?}", parsed_goals); // Debug the parsed goals
 
     parsed_goals
 }
@@ -196,10 +191,13 @@ fn parse_highlights(elements: &Value) -> Vec<Value> {
 }
 
 
-fn parse_frames(data: &Value) -> Vec<Value> {
-    let frames = data.pointer("/body/frames").unwrap_or(&Value::Array(vec![]));
+/// Parses the frames data from the replay JSON.
+pub fn parse_frames(data: &Value) -> Vec<Value> {
+    let empty_frames = Value::Array(vec![]); // Fallback for empty frames
+    let frames = data.pointer("/content/body/frames").unwrap_or(&empty_frames);
     let empty_vec = vec![];
     let mut actors = serde_json::Map::new();
+    let mut unhandled_keys: HashSet<String> = HashSet::new(); // Track unhandled keys
 
     frames
         .as_array()
@@ -222,50 +220,154 @@ fn parse_frames(data: &Value) -> Vec<Value> {
                 .map(|replication| {
                     let mut replication_map = serde_json::Map::new();
 
+                    // Extract `actor_id`
                     if let Some(actor_id) = replication.pointer("/actor_id/value") {
-                        let actor_id_str = actor_id.to_string();
+                        let actor_id_str = actor_id.as_str().unwrap_or_default().to_string();
+                        replication_map.insert("actor_id".to_string(), actor_id.clone());
 
-                        // Handle `object_name` and its specific cases
+                        // Handle `object_name` and specific cases
                         if let Some(object_name) = replication.pointer("/value/spawned/class_name").and_then(|v| v.as_str()) {
                             match object_name {
-                                "Engine.Actor:RemoteRole" => {
-                                    if let Some(remote_role) = replication.pointer("/value/enum") {
-                                        actors.entry(actor_id_str.clone())
-                                            .or_insert_with(serde_json::Map::new)
-                                            .insert("remote_role".to_string(), remote_role.clone());
-                                    }
-                                }
-                                "TAGame.PRI_TA:PersistentCamera" |
-                                "TAGame.CameraSettingsActor_TA:PRI" |
-                                "TAGame.Ball_TA:GameEvent" |
-                                "TAGame.CarComponent_TA:Vehicle" |
-                                "Engine.Pawn:PlayerReplicationInfo" => {
-                                    if let Some(flagged_int) = replication.pointer("/value/flagged_int/int") {
-                                        actors.entry(actor_id_str.clone())
-                                            .or_insert_with(serde_json::Map::new)
-                                            .entry("parent_ids".to_string())
-                                            .or_insert_with(|| Value::Array(vec![]))
-                                            .as_array_mut()
+                                // Boost pickup
+                                "TAGame.VehiclePickup_Boost_TA" => {
+                                    if let Some(location) = replication.pointer("/value/location") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
                                             .unwrap()
-                                            .push(flagged_int.clone());
+                                            .insert("pickup_location".to_string(), location.clone());
                                     }
                                 }
-                                "TAGame.CarComponent_Boost_TA:ReplicatedBoost" => {
-                                    if let Some(boost_amount) = replication.pointer("/value/boost/boostAmount") {
-                                        actors.entry(actor_id_str.clone())
-                                            .or_insert_with(serde_json::Map::new)
-                                            .insert("boost".to_string(), boost_amount.clone());
+                                // Camera settings
+                                "TAGame.CameraSettingsActor_TA" => {
+                                    if let Some(camera_settings) = replication.pointer("/value/settings") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("camera_settings".to_string(), camera_settings.clone());
                                     }
                                 }
-                                // Add more cases here as needed
+                                // Player replication info
+                                "TAGame.PRI_TA" => {
+                                    if let Some(player_data) = replication.pointer("/value/player_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("player_data".to_string(), player_data.clone());
+                                    }
+                                }
+                                // Game rules
+                                "TAGame.GRI_TA" => {
+                                    if let Some(rules) = replication.pointer("/value/rules") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("game_rules".to_string(), rules.clone());
+                                    }
+                                }
+                                // NetModeReplicator
+                                "ProjectX.NetModeReplicator" => {
+                                    if let Some(net_mode) = replication.pointer("/value/net_mode") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("net_mode".to_string(), net_mode.clone());
+                                    }
+                                }
+                                // Car
+                                "TAGame.Car_TA" => {
+                                    if let Some(car_data) = replication.pointer("/value/car_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("car_data".to_string(), car_data.clone());
+                                    }
+                                }
+                                // GodBall Game Event
+                                "TAGame.GameEvent_GodBall_TA" => {
+                                    if let Some(event_data) = replication.pointer("/value/event_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("event_data".to_string(), event_data.clone());
+                                    }
+                                }
+                                // Rumble pickups
+                                "TAGame.RumblePickups_TA" => {
+                                    if let Some(pickups) = replication.pointer("/value/pickups") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("rumble_pickups".to_string(), pickups.clone());
+                                    }
+                                }
+                                // Car components
+                                "TAGame.CarComponent_DoubleJump_TA"
+                                | "TAGame.CarComponent_Dodge_TA"
+                                | "TAGame.CarComponent_Jump_TA"
+                                | "TAGame.CarComponent_FlipCar_TA"
+                                | "TAGame.CarComponent_Boost_TA" => {
+                                    if let Some(component_data) = replication.pointer("/value/component_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("car_component".to_string(), component_data.clone());
+                                    }
+                                }
+                                "TAGame.Team_Soccar_TA" => {
+                                    if let Some(team_data) = replication.pointer("/value/team_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("team_data".to_string(), team_data.clone());
+                                    }
+                                    if let Some(team_score) = replication.pointer("/value/team_score") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("team_score".to_string(), team_score.clone());
+                                    }
+                                }
+                                // Ball (God Mode)
+                                "TAGame.Ball_God_TA" => {
+                                    if let Some(ball_data) = replication.pointer("/value/ball_data") {
+                                        actors
+                                            .entry(actor_id_str.clone())
+                                            .or_insert_with(|| Value::Object(serde_json::Map::new()))
+                                            .as_object_mut()
+                                            .unwrap()
+                                            .insert("ball_data".to_string(), ball_data.clone());
+                                    }
+                                }
+                                // Default case for unhandled object names
                                 _ => {
-                                    // Handle unrecognized cases or pass
-                                    println!("Unrecognized object_name: {}", object_name);
+                                    if unhandled_keys.insert(object_name.to_string()) {
+                                        println!("Unhandled key: {}", object_name); // Only print new unhandled keys
+                                    }
                                 }
                             }
                         }
-
-                        replication_map.insert("actor_id".to_string(), actor_id.clone());
                     }
 
                     Value::Object(replication_map)
@@ -275,8 +377,10 @@ fn parse_frames(data: &Value) -> Vec<Value> {
             frame_map.insert("replications".to_string(), Value::Array(replications));
             Value::Object(frame_map)
         })
+        .filter(|frame| !frame.is_null())
         .collect()
 }
+
 
 fn find_property(array: &Value, key: &str) -> Option<Value> {
     array
