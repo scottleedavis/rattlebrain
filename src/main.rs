@@ -62,7 +62,7 @@ fn main() {
             };
 
             // Analyze the replay
-            match analysis::analyze_replay(json_data) {
+            match analysis::analyze_replay(json_data,input) {
                 Ok(_) => println!("Analysis command completed successfully."),
                 Err(e) => eprintln!("Error analyzing replay: {}", e),
             }

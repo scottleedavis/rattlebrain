@@ -3,22 +3,32 @@ use std::fs;
 use std::collections::HashSet;
 
 
-/// Analyzes the replay and extracts data into structured JSON files.
-pub fn analyze_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
-    // let match_guid = find_property(
-    //     data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
-    //     "MatchGuid",
-    // )
-    // .and_then(|v| v.as_str().map(|s| s.to_string()))
-    // .unwrap_or_else(|| "unknown_match_guid".to_string());
+pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
 
-    // let output_dir = "output";
-    // fs::create_dir_all(output_dir)?;
+    let output_dir = "output";
+    fs::create_dir_all(output_dir)?;
+
+    // Route processing based on filename and toggles
+    if filename.ends_with(".frames.json") {
+        println!("todo parse frames");
+    }
+    if filename.ends_with(".goals.json") {
+
+    } 
+    if filename.ends_with(".header.json") {
+
+    }
+    if filename.ends_with(".highlights.json") {
+
+    }
+    if filename.ends_with(".player_stats.json") {
+
+    }
+
     Ok(())
 }
 
-
-/// Parses the frames data from the replay JSON.
+// // Parses the frames data from the replay JSON.
 // pub fn parse_frames(data: &Value) -> Vec<Value> {
 //     let empty_frames = Value::Array(vec![]); 
 //     let frames = data.pointer("/content/body/frames").unwrap_or(&empty_frames);
