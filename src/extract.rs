@@ -1,8 +1,7 @@
 use std::process::Command;
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self};
 use serde_json::{json, Value};
-use std::collections::HashSet;
 
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
 pub fn extract_replay(input: &str, output: &str) -> io::Result<()> {
