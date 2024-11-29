@@ -423,18 +423,7 @@ pub fn parse_frames(data: &Value) -> Vec<Value> {
                                 }
 
                             }
-                            // updated.pointer("/name").and_then(|v|v.as_array()).map(|update| {
-                            //      println!("Updated item name: {}", update);
-                            // // }
-                            // match object_name {
-                                
-                            //     // Default case for unhandled object names
-                            //     _ => {
-                            //         if unhandled_keys.insert(object_name.to_string()) {
-                            //             println!("Unhandled updated key: {}", object_name); // Only print new unhandled keys
-                            //         }
-                            //     }
-                            // }
+                            
                         }
                     }
 
