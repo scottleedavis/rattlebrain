@@ -1,33 +1,139 @@
 use serde_json::Value;
-use std::fs;
+use std::collections::HashSet;
+use std::fs::{self, File};
+use std::io::Write;
 
-
+// Main function to analyze replay data
 pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
     if filename.ends_with(".header.json") {
-
+        handle_header(&data, filename)?;
     }
-    
+
     if filename.ends_with(".frames.json") {
-        println!("todo parse frames");
+        handle_frames(&data, filename)?;
     }
 
     if filename.ends_with(".goals.json") {
-
-    } 
+        handle_goals(&data, filename)?;
+    }
 
     if filename.ends_with(".highlights.json") {
-
+        handle_highlights(&data, filename)?;
     }
-    if filename.ends_with(".player_stats.json") {
 
+    if filename.ends_with(".player_stats.json") {
+        handle_player_stats(&data, filename)?;
     }
 
     Ok(())
 }
+
+// Handle header.json files
+fn handle_header(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}_header.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    if let Some(header_data) = data.pointer("/content/header") {
+        write!(file, "key,value\n")?;
+        for (key, value) in header_data.as_object().unwrap_or(&serde_json::Map::new()) {
+            writeln!(file, "{},{}", key, value)?;
+        }
+    }
+    println!("Processed header: {}", filename);
+    Ok(())
+}
+
+fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}_frames.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    writeln!(file, "delta,replication_count\n")?;
+
+    // Define a stable default value
+    let empty_frames = Value::Array(vec![]);
+    let frames = data.pointer("/content/body/frames").unwrap_or(&empty_frames);
+
+    let empty_vec: Vec<Value> = vec![];
+    for frame in frames.as_array().unwrap_or(&empty_vec) {
+        let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
+        let replication_count = frame
+            .get("replications")
+            .and_then(|r| r.as_array())
+            .map_or(0, |r| r.len());
+        writeln!(file, "{},{}", delta, replication_count)?;
+    }
+
+    println!("Processed frames: {}", filename);
+    Ok(())
+}
+
+
+// Handle goals.json files
+fn handle_goals(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}_goals.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+    let empty_array = Value::Array(vec![]); // Define a constant default value
+    writeln!(file, "goal_id,scorer,assist,timestamp\n")?;
+    let goals = data.pointer("/content/goals").unwrap_or(&empty_array);
+    for goal in goals.as_array().unwrap_or(&vec![]) {
+        let goal_id = goal.get("id").unwrap_or(&Value::Null).to_string();
+        let scorer = goal.pointer("/scorer/name").unwrap_or(&Value::Null).to_string();
+        let assist = goal.pointer("/assist/name").unwrap_or(&Value::Null).to_string();
+        let timestamp = goal.get("timestamp").unwrap_or(&Value::Null).to_string();
+        writeln!(file, "{},{},{},{}", goal_id, scorer, assist, timestamp)?;
+    }
+    println!("Processed goals: {}", filename);
+    Ok(())
+}
+
+// Handle highlights.json files
+fn handle_highlights(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}_highlights.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+    let empty_array = Value::Array(vec![]); // Define a constant default value
+    writeln!(file, "highlight_id,player,event,timestamp\n")?;
+    let highlights = data.pointer("/content/highlights").unwrap_or(&empty_array);
+    for highlight in highlights.as_array().unwrap_or(&vec![]) {
+        let highlight_id = highlight.get("id").unwrap_or(&Value::Null).to_string();
+        let player = highlight.pointer("/player/name").unwrap_or(&Value::Null).to_string();
+        let event = highlight.get("event").unwrap_or(&Value::Null).to_string();
+        let timestamp = highlight.get("timestamp").unwrap_or(&Value::Null).to_string();
+        writeln!(file, "{},{},{},{}", highlight_id, player, event, timestamp)?;
+    }
+    println!("Processed highlights: {}", filename);
+    Ok(())
+}
+
+fn handle_player_stats(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}_player_stats.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    writeln!(file, "player_id,name,goals,assists,saves,shots\n")?;
+    let empty_array = Value::Array(vec![]); // Define a constant default value
+    let stats = data.pointer("/content/player_stats").unwrap_or(&empty_array); // Use it here
+    for player in stats.as_array().unwrap_or(&vec![]) {
+        let player_id = player.get("id").unwrap_or(&Value::Null).to_string();
+        let name = player.get("name").unwrap_or(&Value::Null).to_string();
+        let goals = player.get("goals").unwrap_or(&Value::Null).to_string();
+        let assists = player.get("assists").unwrap_or(&Value::Null).to_string();
+        let saves = player.get("saves").unwrap_or(&Value::Null).to_string();
+        let shots = player.get("shots").unwrap_or(&Value::Null).to_string();
+        writeln!(file, "{},{},{},{},{},{}", player_id, name, goals, assists, saves, shots)?;
+    }
+    println!("Processed player stats: {}", filename);
+    Ok(())
+}
+
+
+// Helper to sanitize file names
+fn sanitize_filename(filename: &str) -> String {
+    filename.replace("/", "_").replace("\\", "_").replace(".", "_")
+}
+
+
 
 // // Parses the frames data from the replay JSON.
 // pub fn parse_frames(data: &Value) -> Vec<Value> {
