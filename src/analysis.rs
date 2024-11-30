@@ -1,5 +1,4 @@
 use serde_json::Value;
-use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::Write;
 
@@ -10,10 +9,6 @@ pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::er
 
     if filename.ends_with(".header.json") {
         handle_header(&data, filename)?;
-    }
-
-    if filename.ends_with(".frames.json") {
-        handle_frames(&data, filename)?;
     }
 
     if filename.ends_with(".goals.json") {
@@ -28,26 +23,156 @@ pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::er
         handle_player_stats(&data, filename)?;
     }
 
+    if filename.ends_with(".frames.json") {
+        handle_frames(&data, filename)?;
+    }
+
     Ok(())
 }
 
-// Handle header.json files
 fn handle_header(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}_header.csv", sanitize_filename(filename));
+    let output_path = format!("output/{}.csv", sanitize_filename(filename));
     let mut file = File::create(output_path)?;
 
-    if let Some(header_data) = data.pointer("/content/header") {
-        write!(file, "key,value\n")?;
-        for (key, value) in header_data.as_object().unwrap_or(&serde_json::Map::new()) {
-            writeln!(file, "{},{}", key, value)?;
-        }
-    }
+    // Write CSV header row
+    writeln!(
+        file,
+        "engine_version,licensee_version,patch_version,primary_player_team,team_0_score,team_1_score,team_size,unfair_team_size"
+    )?;
+
+    // Extract values and write a single row
+    let engine_version = data.get("engine_version").unwrap_or(&Value::Null).to_string();
+    let licensee_version = data.get("licensee_version").unwrap_or(&Value::Null).to_string();
+    let patch_version = data.get("patch_version").unwrap_or(&Value::Null).to_string();
+    let primary_player_team = data.get("primary_player_team").unwrap_or(&Value::Null).to_string();
+    let team_0_score = data.get("team_0_score").unwrap_or(&Value::Null).to_string();
+    let team_1_score = data.get("team_1_score").unwrap_or(&Value::Null).to_string();
+    let team_size = data.get("team_size").unwrap_or(&Value::Null).to_string();
+    let unfair_team_size = data.get("unfair_team_size").unwrap_or(&Value::Null).to_string();
+
+    // Write the data row
+    writeln!(
+        file,
+        "{},{},{},{},{},{},{},{}",
+        engine_version,
+        licensee_version,
+        patch_version,
+        primary_player_team,
+        team_0_score,
+        team_1_score,
+        team_size,
+        unfair_team_size
+    )?;
+
     println!("Processed header: {}", filename);
     Ok(())
 }
 
+fn handle_goals(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    // Write CSV header row
+    writeln!(file, "PlayerName,PlayerTeam,Frame")?;
+
+    // Define a stable default value for the array
+    let empty_array: Vec<Value> = vec![];
+    let goals = data.as_array().unwrap_or(&empty_array); // Use the stable reference
+
+    for goal in goals {
+        let player_name = goal.get("PlayerName").unwrap_or(&Value::Null).to_string();
+        let player_team = goal.get("PlayerTeam").unwrap_or(&Value::Null).to_string();
+        let frame = goal.get("frame").unwrap_or(&Value::Null).to_string();
+
+        writeln!(file, "{},{},{}", player_name, player_team, frame)?;
+    }
+
+    println!("Processed goals: {}", filename);
+    Ok(())
+}
+
+
+fn handle_highlights(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    // Write CSV header row
+    writeln!(file, "BallName,CarName,GoalActorName,Frame")?;
+
+    // Define a stable default value for the array
+    let empty_array: Vec<Value> = vec![];
+    let highlights = data.as_array().unwrap_or(&empty_array);
+
+    for highlight in highlights {
+        let ball_name = highlight
+            .pointer("/BallName/name")
+            .unwrap_or(&Value::Null)
+            .to_string();
+        let car_name = highlight
+            .pointer("/CarName/name")
+            .unwrap_or(&Value::Null)
+            .to_string();
+        let goal_actor_name = highlight
+            .pointer("/GoalActorName/name")
+            .unwrap_or(&Value::Null)
+            .to_string();
+        let frame = highlight
+            .pointer("/frame/int")
+            .unwrap_or(&Value::Null)
+            .to_string();
+
+        writeln!(file, "{},{},{},{}", ball_name, car_name, goal_actor_name, frame)?;
+    }
+
+    println!("Processed highlights: {}", filename);
+    Ok(())
+}
+
+fn handle_player_stats(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output_path = format!("output/{}.csv", sanitize_filename(filename));
+    let mut file = File::create(output_path)?;
+
+    // Write CSV header row
+    writeln!(
+        file,
+        "Name,Platform,Goals,Assists,Saves,Score,Shots,Team,bBot"
+    )?;
+
+    // Define a stable default value for the array
+    let empty_array: Vec<Value> = vec![];
+    let players = data.as_array().unwrap_or(&empty_array);
+
+    for player in players {
+        let name = player
+            .pointer("/Name/str")
+            .unwrap_or(&Value::Null)
+            .to_string();
+        let platform = player
+            .pointer("/Platform/byte/1/Right")
+            .unwrap_or(&Value::Null)
+            .to_string();
+        let goals = player.pointer("/Goals/int").unwrap_or(&Value::Null).to_string();
+        let assists = player.pointer("/Assists/int").unwrap_or(&Value::Null).to_string();
+        let saves = player.pointer("/Saves/int").unwrap_or(&Value::Null).to_string();
+        let score = player.pointer("/Score/int").unwrap_or(&Value::Null).to_string();
+        let shots = player.pointer("/Shots/int").unwrap_or(&Value::Null).to_string();
+        let team = player.pointer("/Team/int").unwrap_or(&Value::Null).to_string();
+        let b_bot = player.pointer("/bBot/bool").unwrap_or(&Value::Null).to_string();
+
+        writeln!(
+            file,
+            "{},{},{},{},{},{},{},{},{}",
+            name, platform, goals, assists, saves, score, shots, team, b_bot
+        )?;
+    }
+
+    println!("Processed player stats: {}", filename);
+    Ok(())
+}
+
+
 fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}_frames.csv", sanitize_filename(filename));
+    let output_path = format!("output/{}.csv", sanitize_filename(filename));
     let mut file = File::create(output_path)?;
 
     writeln!(file, "delta,replication_count\n")?;
@@ -67,63 +192,6 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     }
 
     println!("Processed frames: {}", filename);
-    Ok(())
-}
-
-
-// Handle goals.json files
-fn handle_goals(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}_goals.csv", sanitize_filename(filename));
-    let mut file = File::create(output_path)?;
-    let empty_array = Value::Array(vec![]); // Define a constant default value
-    writeln!(file, "goal_id,scorer,assist,timestamp\n")?;
-    let goals = data.pointer("/content/goals").unwrap_or(&empty_array);
-    for goal in goals.as_array().unwrap_or(&vec![]) {
-        let goal_id = goal.get("id").unwrap_or(&Value::Null).to_string();
-        let scorer = goal.pointer("/scorer/name").unwrap_or(&Value::Null).to_string();
-        let assist = goal.pointer("/assist/name").unwrap_or(&Value::Null).to_string();
-        let timestamp = goal.get("timestamp").unwrap_or(&Value::Null).to_string();
-        writeln!(file, "{},{},{},{}", goal_id, scorer, assist, timestamp)?;
-    }
-    println!("Processed goals: {}", filename);
-    Ok(())
-}
-
-// Handle highlights.json files
-fn handle_highlights(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}_highlights.csv", sanitize_filename(filename));
-    let mut file = File::create(output_path)?;
-    let empty_array = Value::Array(vec![]); // Define a constant default value
-    writeln!(file, "highlight_id,player,event,timestamp\n")?;
-    let highlights = data.pointer("/content/highlights").unwrap_or(&empty_array);
-    for highlight in highlights.as_array().unwrap_or(&vec![]) {
-        let highlight_id = highlight.get("id").unwrap_or(&Value::Null).to_string();
-        let player = highlight.pointer("/player/name").unwrap_or(&Value::Null).to_string();
-        let event = highlight.get("event").unwrap_or(&Value::Null).to_string();
-        let timestamp = highlight.get("timestamp").unwrap_or(&Value::Null).to_string();
-        writeln!(file, "{},{},{},{}", highlight_id, player, event, timestamp)?;
-    }
-    println!("Processed highlights: {}", filename);
-    Ok(())
-}
-
-fn handle_player_stats(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}_player_stats.csv", sanitize_filename(filename));
-    let mut file = File::create(output_path)?;
-
-    writeln!(file, "player_id,name,goals,assists,saves,shots\n")?;
-    let empty_array = Value::Array(vec![]); // Define a constant default value
-    let stats = data.pointer("/content/player_stats").unwrap_or(&empty_array); // Use it here
-    for player in stats.as_array().unwrap_or(&vec![]) {
-        let player_id = player.get("id").unwrap_or(&Value::Null).to_string();
-        let name = player.get("name").unwrap_or(&Value::Null).to_string();
-        let goals = player.get("goals").unwrap_or(&Value::Null).to_string();
-        let assists = player.get("assists").unwrap_or(&Value::Null).to_string();
-        let saves = player.get("saves").unwrap_or(&Value::Null).to_string();
-        let shots = player.get("shots").unwrap_or(&Value::Null).to_string();
-        writeln!(file, "{},{},{},{},{},{}", player_id, name, goals, assists, saves, shots)?;
-    }
-    println!("Processed player stats: {}", filename);
     Ok(())
 }
 
