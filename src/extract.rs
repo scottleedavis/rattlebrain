@@ -79,7 +79,10 @@ pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     );
     save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
-    let frames = parse_frames(&data);
+    let frames = parse_frames(
+        data.pointer("/content/body/frames")
+            .unwrap_or(&Value::Array(vec![])),
+    );
     save_to_file(&Value::Array(frames), output_dir, &match_guid, "frames")?;
 
     Ok(())
@@ -232,11 +235,7 @@ fn parse_highlights(elements: &Value) -> Vec<Value> {
 }
 
 /// Saves frames to a JSON file and returns them.
-pub fn parse_frames(data: &Value) -> Vec<Value> {
-    // Retrieve the frames array
-    let empty_frames = Value::Array(vec![]);
-    let frames = data.pointer("/content/body/frames").unwrap_or(&empty_frames);
-
+pub fn parse_frames(frames: &Value) -> Vec<Value> {
     // Return the frames as a Vec<Value>
     frames.as_array().cloned().unwrap_or_default()
 }
