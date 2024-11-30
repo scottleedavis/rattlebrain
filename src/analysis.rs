@@ -7,16 +7,18 @@ pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::er
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
-    // Route processing based on filename and toggles
-    if filename.ends_with(".frames.json") {
-        println!("todo parse frames");
-    }
-    if filename.ends_with(".goals.json") {
-
-    } 
     if filename.ends_with(".header.json") {
 
     }
+    
+    if filename.ends_with(".frames.json") {
+        println!("todo parse frames");
+    }
+
+    if filename.ends_with(".goals.json") {
+
+    } 
+
     if filename.ends_with(".highlights.json") {
 
     }
