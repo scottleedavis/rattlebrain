@@ -177,17 +177,13 @@ fn handle_player_stats(data: &Value, filename: &str) -> Result<(), Box<dyn std::
 fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
     let output_path = format!("output/{}.csv", sanitize_filename(filename));
     let mut file = File::create(output_path)?;
-    let empty_array = Value::Array(vec![]);
-    let frames = data.pointer("/content/frames").unwrap_or(&empty_array);
 
-    // Pass the extracted frames to parse_frames
-    parse_frames(frames, &mut file)?;
+    parse_frames(data, &mut file)?;
 
     println!("Processed frames: {}", filename);
     Ok(())
 }
 
-/// Parses frames data and writes to a CSV file
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
@@ -216,10 +212,12 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                 if let Some(spawned) = replication.pointer("/value/spawned") {
                     let component = "spawned".to_string();
                     let name = spawned.get("class_name").unwrap_or(&Value::Null).to_string();
-                    let value = serde_json::to_string(spawned).unwrap_or_else(|_| "{}".to_string());
+                    let value = serde_json::to_string(spawned)
+                        .unwrap_or_else(|_| "{}".to_string())
+                        .replace("\"", "\\\""); // Escape inner quotes
                     writeln!(
                         file,
-                        "{},{},{},{},{},{}",
+                        "{},{},{},{},{},\"{}\"",
                         delta, actor_id, limit, component, name, value
                     )?;
                 }
@@ -230,10 +228,11 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                         let component = "updated".to_string();
                         let name = update.get("name").unwrap_or(&Value::Null).to_string();
                         let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
-                            .unwrap_or_else(|_| "{}".to_string());
+                            .unwrap_or_else(|_| "{}".to_string())
+                            .replace("\"", "\\\""); // Escape inner quotes
                         writeln!(
                             file,
-                            "{},{},{},{},{},{}",
+                            "{},{},{},{},{},\"{}\"",
                             delta, actor_id, limit, component, name, value
                         )?;
                     }
