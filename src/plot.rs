@@ -44,16 +44,23 @@ fn plot_match(data: &[GameState], output_file: &str) -> Result<(), Box<dyn Error
     let root = BitMapBackend::new(output_file, (800, 600)).into_drawing_area();
     root.fill(&WHITE)?;
 
+    // Calculate min and max for x and y
+    let min_x = data.iter().map(|s| s.location_x).fold(f64::INFINITY, f64::min);
+    let max_x = data.iter().map(|s| s.location_x).fold(f64::NEG_INFINITY, f64::max);
+    let min_y = data.iter().map(|s| s.location_y).fold(f64::INFINITY, f64::min);
+    let max_y = data.iter().map(|s| s.location_y).fold(f64::NEG_INFINITY, f64::max);
+
+    // Create the chart with dynamic bounds
     let mut chart = ChartBuilder::on(&root)
         .caption("Match Visualization", ("sans-serif", 50))
         .margin(10)
         .x_label_area_size(40)
         .y_label_area_size(40)
-        .build_cartesian_2d(-300000.0..300000.0, -500000.0..500000.0)?;
+        .build_cartesian_2d(min_x..max_x, min_y..max_y)?;
 
     chart.configure_mesh().draw()?;
 
-    // Plot players and the ball
+    // Plot the ball
     chart
         .draw_series(data.iter().filter(|s| s.player_name == "_ball_").map(|state| {
             Circle::new((state.location_x, state.location_y), 1, BLACK.filled())
@@ -95,3 +102,4 @@ fn plot_match(data: &[GameState], output_file: &str) -> Result<(), Box<dyn Error
     root.present()?;
     Ok(())
 }
+
