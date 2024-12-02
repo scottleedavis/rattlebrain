@@ -11,9 +11,8 @@ use std::io::Write;
 
 #[test]
 fn test_extract_replay_json_schema_validation() {
-    // Paths to the rattletrap binary, input replay, and output JSON
-    let rattletrap_path = "./rattletrap"; // Adjust this path as needed
-    let input_replay = "./tests/valid.replay"; // Provide a valid replay file for testing
+    let rattletrap_path = "./rattletrap"; 
+    let input_replay = "./tests/valid.replay"; 
     let output_json = "./output/output_schema_test.json";
 
     // Run rattletrap to extract replay data to JSON

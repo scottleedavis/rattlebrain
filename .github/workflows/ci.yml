@@ -31,10 +31,4 @@ jobs:
       run: mkdir -p ./output 
 
     - name: Run tests
-      run: |
-        pwd
-        cargo test --verbose
-
-    - name: Check it
-      run: |
-        ls -la
+      run: cargo test --verbose
