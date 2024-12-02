@@ -185,20 +185,23 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+use std::io::BufWriter;
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
 
     // Write CSV headers
-    writeln!(
-        file,
-        "Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z"
-    )?;
+    // writeln!(
+    //     file,
+    //     "Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z"
+    // )?;
 
     let mut player_map: HashMap<String, String> = HashMap::new();
     let mut team_map: HashMap<String, String> = HashMap::new();
     let mut car_map: HashMap<String, String> = HashMap::new();
-
+    let mut lines: Vec<String> = Vec::new();
+    lines.push("Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z".to_string());
+    
     for frame in frames {
         let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
         let time = frame.get("time").unwrap_or(&Value::Null).to_string();
@@ -310,13 +313,22 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .unwrap_or(0.0);
 
                             // Write data including location and rotation
-                            writeln!(
-                                file,
-                                "{},{},\"{}\",{},{},{},{},{},{},0.0,,,,,,,",
-                                time, tname, pname,
-                                location_x, location_y, location_z,
+                            // writeln!(
+                            //     file,
+                            //     "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
+                            //     time, tname, pname,
+                            //     location_x, location_y, location_z,
+                            //     rotation_x, rotation_y, rotation_z
+                            // ).expect("Failed to write to file");
+                                    // Create and store the formatted line instead of writing immediately
+                                    
+
+                           lines.push(format!(
+                                "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
+                                time, tname, pname, 
+                                location_x, location_y, location_z, 
                                 rotation_x, rotation_y, rotation_z
-                            ).expect("Failed to write to file");
+                            ));
                         }
 
 
@@ -390,16 +402,26 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                         .unwrap_or(0.0);
 
                                     // Write data including location and rotation
-                                    writeln!(
-                                        file,
-                                        "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                    // writeln!(
+                                    //     file,
+                                    //     "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                    //     time, tname, pname,
+                                    //     location_x, location_y, location_z,
+                                    //     rotation_x, rotation_y, rotation_z, rotation_w,
+                                    //     angular_velocity_x, angular_velocity_y, angular_velocity_z,
+                                    //     linear_velocity_x, linear_velocity_y, linear_velocity_z
+                                    // ).expect("Failed to write to file");
+
+                                    lines.push(format!(
+                                         "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
                                         time, tname, pname,
                                         location_x, location_y, location_z,
                                         rotation_x, rotation_y, rotation_z, rotation_w,
                                         angular_velocity_x, angular_velocity_y, angular_velocity_z,
                                         linear_velocity_x, linear_velocity_y, linear_velocity_z
-                                    ).expect("Failed to write to file");
+                                     ));
                                 }
+
                             } else {
                                 // writeln!(
                                 //     file,
@@ -418,6 +440,14 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     // {
     //     println!("ID: {}, Name: {}", id, name);
     // }
+  // Open the file once and write all lines at once
+    // let file = File::create("output.csv")?;
+    let mut writer = BufWriter::new(file);
+
+    // Write all lines to the file
+    for line in &lines {
+        writeln!(writer, "{}", line)?;
+    }
 
 
     Ok(())
