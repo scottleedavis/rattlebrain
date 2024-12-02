@@ -66,7 +66,7 @@ Claude
 
 
 ChatGPT
--`OPENAI_API_KEY`: Your ChatGPT API key 
+- `OPENAI_API_KEY`: Your ChatGPT API key 
 - ..
 
 
