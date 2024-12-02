@@ -71,10 +71,12 @@ ChatGPT
 
 
 Gemini
+- `GEMINI_API_KEY`: Your Gemini API key
 - ..
 
 
 Copilot
+- `COPILOT_API_KEY`: Your Copilot API key
 - ..
 
 
