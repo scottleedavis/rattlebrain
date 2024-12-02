@@ -2,6 +2,7 @@ use serde_json::Value;
 use std::fs::{self, File};
 use std::io::Write;
 use std::collections::HashMap;
+use std::io::BufWriter;
 
 // Main function to analyze replay data
 pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -185,7 +186,6 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-use std::io::BufWriter;
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
@@ -196,7 +196,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     lines.push("Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z".to_string());
     
     for frame in frames {
-        let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
+        // let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
         let time = frame.get("time").unwrap_or(&Value::Null).to_string();
 
         if let Some(replications) = frame.get("replications").and_then(|r| r.as_array()) {
@@ -205,14 +205,13 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     .pointer("/actor_id/value")
                     .unwrap_or(&Value::Null)
                     .to_string();
-                let limit = replication
-                    .pointer("/actor_id/limit")
-                    .unwrap_or(&Value::Null)
-                    .to_string();
+                // let limit = replication
+                //     .pointer("/actor_id/limit")
+                //     .unwrap_or(&Value::Null)
+                //     .to_string();
 
                 if let Some(updated) = replication.pointer("/value/updated") {
                     for update in updated.as_array().unwrap_or(&empty_array) {
-                        let component = "updated".to_string();
                         let name = update.get("name").unwrap_or(&Value::Null).as_str().unwrap_or("");
                         if name == "Engine.PlayerReplicationInfo:PlayerName" {
                             if let Some(value_string) = update
@@ -234,9 +233,9 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                             }
 
                         }
-                        if (name == "Engine.Pawn:PlayerReplicationInfo" || 
-                        name == "TAGame.CarComponent_TA:Vehicle" ||
-                        name == "Engine.Pawn:PlayerReplicationInfo" ) {
+                        if name == "Engine.Pawn:PlayerReplicationInfo" || 
+                            name == "TAGame.CarComponent_TA:Vehicle" ||
+                            name == "Engine.Pawn:PlayerReplicationInfo"  {
                             if let Some(value_int) = update
                                 .get("value")
                                 .and_then(|value| value.get("flagged_int"))
@@ -244,7 +243,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .and_then(|int_value| int_value.as_i64())
 
                             {
-                                if let Some(name) = player_map.get(&value_int.to_string()) {
+                                if let Some(_name) = player_map.get(&value_int.to_string()) {
                                     car_map.insert(actor_id.clone(),value_int.to_string() );
                                 }
 
@@ -261,16 +260,13 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     .pointer("/actor_id/value")
                     .unwrap_or(&Value::Null)
                     .to_string();
-                let limit = replication
-                    .pointer("/actor_id/limit")
-                    .unwrap_or(&Value::Null)
-                    .to_string();
+                // let limit = replication
+                //     .pointer("/actor_id/limit")
+                //     .unwrap_or(&Value::Null)
+                //     .to_string();
 
                 if let Some(spawned) = replication.pointer("/value/spawned") {
-                    let component = "spawned".to_string();
-                    let name = spawned.get("class_name").unwrap_or(&Value::Null).to_string();
                     let obj_name = spawned.get("object_name").unwrap_or(&Value::Null).to_string();
-                    let obj_id = spawned.get("object_id").unwrap_or(&Value::Null).to_string();
                     if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
                         if obj_name == "\"Archetypes.Car.Car_Default\""{
                             let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
@@ -308,14 +304,13 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                 // Handle `updated` components
                 if let Some(updated) = replication.pointer("/value/updated") {
                     for update in updated.as_array().unwrap_or(&empty_array) {
-                        let component = "updated".to_string();
                         let name = update.get("name").unwrap_or(&Value::Null).to_string();
 
                         if name == "\"TAGame.RBActor_TA:ReplicatedRBState\"" {
 
-                            let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
-                                            .unwrap_or_else(|_| "{}".to_string())
-                                            .replace("\"", "\\\"");
+                            // let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
+                            //                 .unwrap_or_else(|_| "{}".to_string())
+                            //                 .replace("\"", "\\\"");
 
                             if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
                                 if cname != "Unknown" {
