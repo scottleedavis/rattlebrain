@@ -4,6 +4,7 @@ use std::fs::File;
 use csv::Reader;
 use plotters::prelude::*;
 
+
 #[derive(Debug, Deserialize)]
 pub struct GameState {
     time: f64,
@@ -55,24 +56,37 @@ fn plot_match(data: &[GameState], output_file: &str) -> Result<(), Box<dyn Error
     // Plot players and the ball
     chart
         .draw_series(data.iter().filter(|s| s.player_name == "_ball_").map(|state| {
-            Circle::new((state.location_x, state.location_y), 5, RED.filled())
+            Circle::new((state.location_x, state.location_y), 1, BLACK.filled())
         }))?
         .label("Ball")
-        .legend(|(x, y)| Circle::new((x, y), 5, RED.filled()));
+        .legend(|(x, y)| Circle::new((x, y), 1, BLACK.filled()));
 
-    chart
-        .draw_series(data.iter().filter(|s| s.team == Some(46)).map(|state| {
-            Circle::new((state.location_x, state.location_y), 5, BLUE.filled())
-        }))?
-        .label("Team 46")
-        .legend(|(x, y)| Circle::new((x, y), 5, BLUE.filled()));
+    // Dynamically identify team IDs
+    let mut teams = data
+        .iter()
+        .filter_map(|s| s.team)
+        .collect::<std::collections::HashSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    teams.sort(); // Ensure consistent ordering
 
-    chart
-        .draw_series(data.iter().filter(|s| s.team == Some(50)).map(|state| {
-            Circle::new((state.location_x, state.location_y), 5, GREEN.filled())
-        }))?
-        .label("Team 50")
-        .legend(|(x, y)| Circle::new((x, y), 5, GREEN.filled()));
+    if let [team1, team2] = teams.as_slice() {
+        chart
+            .draw_series(data.iter().filter(|s| s.team == Some(*team1)).map(|state| {
+                Circle::new((state.location_x, state.location_y), 2, BLUE.filled())
+            }))?
+            .label("Blue")
+            .legend(|(x, y)| Circle::new((x, y), 5, BLUE.filled()));
+
+        chart
+            .draw_series(data.iter().filter(|s| s.team == Some(*team2)).map(|state| {
+                Circle::new((state.location_x, state.location_y), 2, RED.filled())
+            }))?
+            .label("Orange")
+            .legend(|(x, y)| Circle::new((x, y), 5, RED.filled()));
+    } else {
+        println!("Unexpected number of teams: {}", teams.len());
+    }
 
     chart.configure_series_labels()
         .border_style(&BLACK)
@@ -81,5 +95,3 @@ fn plot_match(data: &[GameState], output_file: &str) -> Result<(), Box<dyn Error
     root.present()?;
     Ok(())
 }
-
-
