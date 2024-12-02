@@ -66,14 +66,13 @@ fn test_extract_replay_json_schema_validation() {
 #[test]
 fn test_extract_invalid_replay() {
     let invalid_replay_path = "tests/invalid.replay";
-    let output_path = "output/output.json";
 
     // Create a dummy invalid replay file
     let mut file = File::create(invalid_replay_path).unwrap();
     file.write_all(b"invalid replay data").unwrap();
 
     // Call extract_replay
-    let result = extract::extract_replay(invalid_replay_path, output_path);
+    let result = extract::extract_replay(invalid_replay_path);
     assert!(result.is_err());
 
     // Clean up
@@ -86,8 +85,8 @@ fn test_extract_replay_creates_files() {
     let input_replay = "tests/valid.replay"; 
     let output_dir = "./output";
     let match_guid = "383F0B0411EFAC27082CAFA884251EFF";
-    let output_file = format!("{}/output.json", output_dir).to_string();
-    match extract::extract_replay(input_replay, "output/output.json") {
+    let output_file = format!("{}/valid.replay.json", output_dir).to_string();
+    match extract::extract_replay(input_replay) {
         Ok(_) => println!("Extract command completed successfully."),
         Err(e) => eprintln!("Error extracting replay: {}", e),
     } 

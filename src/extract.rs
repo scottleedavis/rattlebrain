@@ -2,12 +2,19 @@ use std::process::Command;
 use std::fs;
 use std::io::{self};
 use serde_json::{json, Value};
-
+    use std::path::Path;
+    
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
-pub fn extract_replay(input: &str, output: &str) -> io::Result<()> {
+pub fn extract_replay(input: &str) -> io::Result<()> {
     let rattletrap_path = "./rattletrap"; 
-    let json_output = format!("{}", output);
 
+
+    let filename = Path::new(&input).file_name()
+        .unwrap_or_else(|| Path::new(&input).as_os_str())
+        .to_str()
+        .unwrap_or(input);
+
+    let json_output = format!("./output/{}.json", filename);
     // Run the rattletrap command
     let output_status = Command::new(rattletrap_path)
         .arg("--input")

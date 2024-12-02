@@ -23,14 +23,13 @@ fn main() {
 
     match command.as_str() {
         "extract" => {
-            if args.len() < 4 {
-                println!("Usage: rocket-league-replay-ai-analysis extract <input> <output>");
+            if args.len() < 3 {
+                println!("Usage: rocket-league-replay-ai-analysis extract <input>");
                 return;
             }
             let input = &args[2];
-            let output = &args[3];
             println!("Extracting replay data...");
-            match extract::extract_replay(input, output) {
+            match extract::extract_replay(input) {
                 Ok(_) => println!("Extract command completed successfully."),
                 Err(e) => eprintln!("Error extracting replay: {}", e),
             }
