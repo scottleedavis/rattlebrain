@@ -66,9 +66,9 @@ fn main() {
                 Err(e) => eprintln!("Error converting replay: {}", e),
             }
         }
-        "analyze" => {
+        "ai" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis analyze <input>");
+                println!("Usage: rocket-league-replay-ai-analysis ai <input>");
                 return;
             }
             let query = &args[2];
