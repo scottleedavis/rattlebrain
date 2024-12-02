@@ -189,13 +189,6 @@ use std::io::BufWriter;
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
-
-    // Write CSV headers
-    // writeln!(
-    //     file,
-    //     "Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z"
-    // )?;
-
     let mut player_map: HashMap<String, String> = HashMap::new();
     let mut team_map: HashMap<String, String> = HashMap::new();
     let mut car_map: HashMap<String, String> = HashMap::new();
@@ -217,11 +210,9 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     .unwrap_or(&Value::Null)
                     .to_string();
 
-                // Handle `updated` components
                 if let Some(updated) = replication.pointer("/value/updated") {
                     for update in updated.as_array().unwrap_or(&empty_array) {
                         let component = "updated".to_string();
-                        // Extract the name field and check its value
                         let name = update.get("name").unwrap_or(&Value::Null).as_str().unwrap_or("");
                         if name == "Engine.PlayerReplicationInfo:PlayerName" {
                             if let Some(value_string) = update
@@ -275,23 +266,15 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     .unwrap_or(&Value::Null)
                     .to_string();
 
-                // Handle `spawned` component
                 if let Some(spawned) = replication.pointer("/value/spawned") {
                     let component = "spawned".to_string();
                     let name = spawned.get("class_name").unwrap_or(&Value::Null).to_string();
                     let obj_name = spawned.get("object_name").unwrap_or(&Value::Null).to_string();
                     let obj_id = spawned.get("object_id").unwrap_or(&Value::Null).to_string();
-
-                    // let value = serde_json::to_string(spawned)
-                    //     .unwrap_or_else(|_| "{}".to_string())
-                    //     .replace("\"", "\\\"");
-
                     if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
                         if obj_name == "\"Archetypes.Car.Car_Default\""{
                             let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
                             let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
-
-                            // Extract location and rotation data
                             let location_x = spawned.pointer("/initialization/location/x")
                                 .and_then(Value::as_i64)
                                 .unwrap_or(0);
@@ -312,34 +295,15 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .and_then(Value::as_f64)
                                 .unwrap_or(0.0);
 
-                            // Write data including location and rotation
-                            // writeln!(
-                            //     file,
-                            //     "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
-                            //     time, tname, pname,
-                            //     location_x, location_y, location_z,
-                            //     rotation_x, rotation_y, rotation_z
-                            // ).expect("Failed to write to file");
-                                    // Create and store the formatted line instead of writing immediately
-                                    
-
-                           lines.push(format!(
+                            lines.push(format!(
                                 "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
                                 time, tname, pname, 
                                 location_x, location_y, location_z, 
                                 rotation_x, rotation_y, rotation_z
                             ));
                         }
-
-
-                    } else {
-                        // writeln!(
-                        //     file,
-                        //     "{},,{},{},\"{}\"",
-                        //     time, delta, actor_id,obj_name,value
-                        // );
                     }
-            }
+                }
 
                 // Handle `updated` components
                 if let Some(updated) = replication.pointer("/value/updated") {
@@ -401,17 +365,6 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                         .and_then(Value::as_f64)
                                         .unwrap_or(0.0);
 
-                                    // Write data including location and rotation
-                                    // writeln!(
-                                    //     file,
-                                    //     "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
-                                    //     time, tname, pname,
-                                    //     location_x, location_y, location_z,
-                                    //     rotation_x, rotation_y, rotation_z, rotation_w,
-                                    //     angular_velocity_x, angular_velocity_y, angular_velocity_z,
-                                    //     linear_velocity_x, linear_velocity_y, linear_velocity_z
-                                    // ).expect("Failed to write to file");
-
                                     lines.push(format!(
                                          "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
                                         time, tname, pname,
@@ -422,13 +375,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                      ));
                                 }
 
-                            } else {
-                                // writeln!(
-                                //     file,
-                                //     "{},,{},{},\"{}\"",
-                                //     time, actor_id,name,value
-                                // );
-                            }
+                            } 
                         }
                     }
                 }
@@ -436,19 +383,10 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
         }
     }
 
-    // for (id, name) in &player_map
-    // {
-    //     println!("ID: {}, Name: {}", id, name);
-    // }
-  // Open the file once and write all lines at once
-    // let file = File::create("output.csv")?;
     let mut writer = BufWriter::new(file);
-
-    // Write all lines to the file
     for line in &lines {
         writeln!(writer, "{}", line)?;
     }
-
 
     Ok(())
 }
