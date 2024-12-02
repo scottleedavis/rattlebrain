@@ -23,10 +23,12 @@ git clone https://github.com/scottleedavis/rocket-league-ai-analysis.git
 cd rocket-league-ai-analysis
 ```
 
-2. Create a `.env` file in the project root:
+2. Create a `.env` file in the project root.  Any/all key(s) optional for AI feedback:
 ```bash
-CLAUDE_API_KEY=your-api-key-here
-OPENAI_API_KEY=your-api-key-here
+CLAUDE_API_KEY="your-api-key-here"
+OPENAI_API_KEY="your-api-key-here"
+GEMINI_API_KEY="your-api-key-here"
+COPILOT_API_KEY="your-api-key-here"
 ```
 
 3. Build the project:
@@ -41,6 +43,7 @@ Locally
 docker build -t rocket-league-replay-ai-analysis .
 ```
 
+
 ## Usage
 
 1. Basic analysis:
@@ -52,6 +55,16 @@ cargo run -- analyze output/some.replay.json.csv
 ```bash
 docker run rocket-league-replay-ai-analysis ...
 ```
+
+## Testing
+
+Extract Replay Data:
+```bash
+cargo test
+```
+
+Ensure .env is set up properly.
+Test with one or both API keys to ensure fallback mechanisms work.
 
 ## Configuration
 
@@ -73,15 +86,6 @@ Copilot
 - ..
 
 
-## Testing
-
-Extract Replay Data:
-```bash
-cargo test
-```
-
-Ensure .env is set up properly.
-Test with one or both API keys to ensure fallback mechanisms work.
 
 ## Contributing
 
