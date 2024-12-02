@@ -184,6 +184,7 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+use std::collections::HashMap;
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
@@ -191,11 +192,74 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     // Write CSV headers
     writeln!(
         file,
-        "Delta,ActorID,Limit,Component,Name,Value"
+        "Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z"
     )?;
+
+    let mut player_map: HashMap<String, String> = HashMap::new();
+    let mut team_map: HashMap<String, String> = HashMap::new();
+    let mut car_map: HashMap<String, String> = HashMap::new();
 
     for frame in frames {
         let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
+        let time = frame.get("time").unwrap_or(&Value::Null).to_string();
+
+        if let Some(replications) = frame.get("replications").and_then(|r| r.as_array()) {
+            for replication in replications {
+                let actor_id = replication
+                    .pointer("/actor_id/value")
+                    .unwrap_or(&Value::Null)
+                    .to_string();
+                let limit = replication
+                    .pointer("/actor_id/limit")
+                    .unwrap_or(&Value::Null)
+                    .to_string();
+
+                // Handle `updated` components
+                if let Some(updated) = replication.pointer("/value/updated") {
+                    for update in updated.as_array().unwrap_or(&empty_array) {
+                        let component = "updated".to_string();
+                        // Extract the name field and check its value
+                        let name = update.get("name").unwrap_or(&Value::Null).as_str().unwrap_or("");
+                        if name == "Engine.PlayerReplicationInfo:PlayerName" {
+                            if let Some(value_string) = update
+                                .get("value")
+                                .and_then(|value| value.get("string"))
+                                .and_then(|string_value| string_value.as_str())
+                            {
+                                player_map.insert(actor_id.clone(), value_string.to_string());
+                            }
+                        }
+                        if name == "Engine.PlayerReplicationInfo:Team" {
+                            if let Some(value_int) = update
+                                .get("value")
+                                .and_then(|value| value.get("flagged_int"))
+                                .and_then(|flagged_int| flagged_int.get("int"))
+                                .and_then(|int_value| int_value.as_i64()) 
+                            {
+                                team_map.insert(actor_id.clone(), value_int.to_string());
+                            }
+
+                        }
+                        if (name == "Engine.Pawn:PlayerReplicationInfo" || 
+                        name == "TAGame.CarComponent_TA:Vehicle" ||
+                        name == "Engine.Pawn:PlayerReplicationInfo" ) {
+                            if let Some(value_int) = update
+                                .get("value")
+                                .and_then(|value| value.get("flagged_int"))
+                                .and_then(|value| value.get("int"))
+                                .and_then(|int_value| int_value.as_i64())
+
+                            {
+                                if let Some(name) = player_map.get(&value_int.to_string()) {
+                                    car_map.insert(actor_id.clone(),value_int.to_string() );
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         if let Some(replications) = frame.get("replications").and_then(|r| r.as_array()) {
             for replication in replications {
@@ -212,34 +276,149 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                 if let Some(spawned) = replication.pointer("/value/spawned") {
                     let component = "spawned".to_string();
                     let name = spawned.get("class_name").unwrap_or(&Value::Null).to_string();
-                    let value = serde_json::to_string(spawned)
-                        .unwrap_or_else(|_| "{}".to_string())
-                        .replace("\"", "\\\""); // Escape inner quotes
-                    writeln!(
-                        file,
-                        "{},{},{},{},{},\"{}\"",
-                        delta, actor_id, limit, component, name, value
-                    )?;
-                }
+                    let obj_name = spawned.get("object_name").unwrap_or(&Value::Null).to_string();
+                    let obj_id = spawned.get("object_id").unwrap_or(&Value::Null).to_string();
+
+                    // let value = serde_json::to_string(spawned)
+                    //     .unwrap_or_else(|_| "{}".to_string())
+                    //     .replace("\"", "\\\"");
+
+                    if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
+                        if obj_name == "\"Archetypes.Car.Car_Default\""{
+                            let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+                            let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+
+                            // Extract location and rotation data
+                            let location_x = spawned.pointer("/initialization/location/x")
+                                .and_then(Value::as_i64)
+                                .unwrap_or(0);
+                            let location_y = spawned.pointer("/initialization/location/y")
+                                .and_then(Value::as_i64)
+                                .unwrap_or(0);
+                            let location_z = spawned.pointer("/initialization/location/z")
+                                .and_then(Value::as_i64)
+                                .unwrap_or(0);
+
+                            let rotation_x = spawned.pointer("/initialization/rotation/x")
+                                .and_then(Value::as_f64)
+                                .unwrap_or(0.0);
+                            let rotation_y = spawned.pointer("/initialization/rotation/y")
+                                .and_then(Value::as_f64)
+                                .unwrap_or(0.0);
+                            let rotation_z = spawned.pointer("/initialization/rotation/z")
+                                .and_then(Value::as_f64)
+                                .unwrap_or(0.0);
+
+                            // Write data including location and rotation
+                            writeln!(
+                                file,
+                                "{},{},\"{}\",{},{},{},{},{},{},0.0,,,,,,,",
+                                time, tname, pname,
+                                location_x, location_y, location_z,
+                                rotation_x, rotation_y, rotation_z
+                            ).expect("Failed to write to file");
+                        }
+
+
+                    } else {
+                        // writeln!(
+                        //     file,
+                        //     "{},,{},{},\"{}\"",
+                        //     time, delta, actor_id,obj_name,value
+                        // );
+                    }
+            }
 
                 // Handle `updated` components
                 if let Some(updated) = replication.pointer("/value/updated") {
                     for update in updated.as_array().unwrap_or(&empty_array) {
                         let component = "updated".to_string();
                         let name = update.get("name").unwrap_or(&Value::Null).to_string();
-                        let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
-                            .unwrap_or_else(|_| "{}".to_string())
-                            .replace("\"", "\\\""); // Escape inner quotes
-                        writeln!(
-                            file,
-                            "{},{},{},{},{},\"{}\"",
-                            delta, actor_id, limit, component, name, value
-                        )?;
+
+                        if name == "\"TAGame.RBActor_TA:ReplicatedRBState\"" {
+
+                            let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
+                                            .unwrap_or_else(|_| "{}".to_string())
+                                            .replace("\"", "\\\"");
+
+                            if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
+                                if cname != "Unknown" {
+                                    let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+                                    let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+
+                                    let location_x = update.pointer("/value/rigid_body_state/location/x")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+                                    let location_y = update.pointer("/value/rigid_body_state/location/y")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+                                    let location_z = update.pointer("/value/rigid_body_state/location/z")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+
+                                    let rotation_x = update.pointer("/value/rigid_body_state/rotation/quaternion/x")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+                                    let rotation_y = update.pointer("/value/rigid_body_state/rotation/quaternion/y")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+                                    let rotation_z = update.pointer("/value/rigid_body_state/rotation/quaternion/z")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+                                    let rotation_w = update.pointer("/value/rigid_body_state/rotation/quaternion/w")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+
+                                    let angular_velocity_x = update.pointer("/value/rigid_body_state/angular_velocity/x")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+                                    let  angular_velocity_y = update.pointer("/value/rigid_body_state/angular_velocity/y")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+                                    let  angular_velocity_z = update.pointer("/value/rigid_body_state/angular_velocity/z")
+                                        .and_then(Value::as_i64)
+                                        .unwrap_or(0);
+
+                                    let linear_velocity_x = update.pointer("/value/rigid_body_state/linear_velocity/x")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+                                    let linear_velocity_y = update.pointer("/value/rigid_body_state/linear_velocity/y")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+                                    let linear_velocity_z = update.pointer("/value/rigid_body_state/linear_velocity/z")
+                                        .and_then(Value::as_f64)
+                                        .unwrap_or(0.0);
+
+                                    // Write data including location and rotation
+                                    writeln!(
+                                        file,
+                                        "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                        time, tname, pname,
+                                        location_x, location_y, location_z,
+                                        rotation_x, rotation_y, rotation_z, rotation_w,
+                                        angular_velocity_x, angular_velocity_y, angular_velocity_z,
+                                        linear_velocity_x, linear_velocity_y, linear_velocity_z
+                                    ).expect("Failed to write to file");
+                                }
+                            } else {
+                                // writeln!(
+                                //     file,
+                                //     "{},,{},{},\"{}\"",
+                                //     time, actor_id,name,value
+                                // );
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
+    // for (id, name) in &player_map
+    // {
+    //     println!("ID: {}, Name: {}", id, name);
+    // }
+
 
     Ok(())
 }
