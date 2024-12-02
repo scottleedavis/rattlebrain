@@ -9,7 +9,7 @@ mod ai_tests {
         std::env::set_var("OPENAI_API_KEY", "test-openai-key");
         
         let output = std::process::Command::new("cargo")
-            .args(&["run", "--", "analyze", "test_query"])
+            .args(&["run", "--", "ai", "test_query"])
             .output()
             .expect("Failed to execute process");
 
@@ -26,7 +26,7 @@ mod ai_tests {
     fn test_ai_command_with_claude() {
         env::set_var("CLAUDE_API_KEY", "test-claude-key");
         let output = Command::new("cargo")
-            .args(&["run", "--", "analyze", "test_query"])
+            .args(&["run", "--", "ai", "test_query"])
             .output()
             .expect("Failed to execute process");
 
@@ -42,7 +42,7 @@ mod ai_tests {
     fn test_ai_command_with_gemini() {
         env::set_var("GEMINI_API_KEY", "test-gemini-key");
         let output = Command::new("cargo")
-            .args(&["run", "--", "analyze", "test_query"])
+            .args(&["run", "--", "ai", "test_query"])
             .output()
             .expect("Failed to execute process");
 
@@ -58,7 +58,7 @@ mod ai_tests {
     fn test_ai_command_with_copilot() {
         env::set_var("COPILOT_API_KEY", "test-copilot-key");
         let output = Command::new("cargo")
-            .args(&["run", "--", "analyze", "test_query"])
+            .args(&["run", "--", "ai", "test_query"])
             .output()
             .expect("Failed to execute process");
 

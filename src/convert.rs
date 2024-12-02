@@ -193,8 +193,11 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     let mut team_map: HashMap<String, String> = HashMap::new();
     let mut car_map: HashMap<String, String> = HashMap::new();
     let mut lines: Vec<String> = Vec::new();
+    let mut ball_id = String::new(); 
+    let ball_prefix = "\"Archetypes.Ball.Ball_";
     lines.push("Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z".to_string());
-    
+
+
     for frame in frames {
         // let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
         let time = frame.get("time").unwrap_or(&Value::Null).to_string();
@@ -205,6 +208,12 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     .pointer("/actor_id/value")
                     .unwrap_or(&Value::Null)
                     .to_string();
+                if let Some(spawned) = replication.pointer("/value/spawned") {
+                    let obj_name = spawned.get("object_name").unwrap_or(&Value::Null).to_string();
+                    if obj_name.starts_with(ball_prefix) {
+                        ball_id = actor_id.clone();
+                    }
+                }
 
                 if let Some(updated) = replication.pointer("/value/updated") {
                     for update in updated.as_array().unwrap_or(&empty_array) {
@@ -217,8 +226,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                             {
                                 player_map.insert(actor_id.clone(), value_string.to_string());
                             }
-                        }
-                        if name == "Engine.PlayerReplicationInfo:Team" {
+                        } else if name == "Engine.PlayerReplicationInfo:Team" {
                             if let Some(value_int) = update
                                 .get("value")
                                 .and_then(|value| value.get("flagged_int"))
@@ -228,8 +236,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 team_map.insert(actor_id.clone(), value_int.to_string());
                             }
 
-                        }
-                        if name == "Engine.Pawn:PlayerReplicationInfo" || 
+                        } else if name == "Engine.Pawn:PlayerReplicationInfo" || 
                             name == "TAGame.CarComponent_TA:Vehicle" ||
                             name == "Engine.Pawn:PlayerReplicationInfo"  {
                             if let Some(value_int) = update
@@ -244,7 +251,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 }
 
                             }
-                        }
+                        } 
                     }
                 }
             }
@@ -290,8 +297,34 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 rotation_x, rotation_y, rotation_z
                             ));
                         }
-                    } else {
-                        //look for the ball
+                    } else if actor_id == ball_id {
+
+                        let location_x = spawned.pointer("/initialization/location/x")
+                            .and_then(Value::as_i64)
+                            .unwrap_or(0);
+                        let location_y = spawned.pointer("/initialization/location/y")
+                            .and_then(Value::as_i64)
+                            .unwrap_or(0);
+                        let location_z = spawned.pointer("/initialization/location/z")
+                            .and_then(Value::as_i64)
+                            .unwrap_or(0);
+
+                        let rotation_x = spawned.pointer("/initialization/rotation/x")
+                            .and_then(Value::as_f64)
+                            .unwrap_or(0.0);
+                        let rotation_y = spawned.pointer("/initialization/rotation/y")
+                            .and_then(Value::as_f64)
+                            .unwrap_or(0.0);
+                        let rotation_z = spawned.pointer("/initialization/rotation/z")
+                            .and_then(Value::as_f64)
+                            .unwrap_or(0.0);
+
+                        lines.push(format!(
+                            "{},,\"_ball_\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
+                            time, 
+                            location_x, location_y, location_z, 
+                            rotation_x, rotation_y, rotation_z
+                        ));
                     }
                 }
 
@@ -362,8 +395,60 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                         linear_velocity_x, linear_velocity_y, linear_velocity_z
                                      ));
                                 }
-                            } else {
-                                // look for the ball
+                            } else if actor_id == ball_id {
+
+
+                                let location_x = update.pointer("/value/rigid_body_state/location/x")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let location_y = update.pointer("/value/rigid_body_state/location/y")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let location_z = update.pointer("/value/rigid_body_state/location/z")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+
+                                let rotation_x = update.pointer("/value/rigid_body_state/rotation/quaternion/x")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_y = update.pointer("/value/rigid_body_state/rotation/quaternion/y")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_z = update.pointer("/value/rigid_body_state/rotation/quaternion/z")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_w = update.pointer("/value/rigid_body_state/rotation/quaternion/w")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+
+                                let angular_velocity_x = update.pointer("/value/rigid_body_state/angular_velocity/x")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let  angular_velocity_y = update.pointer("/value/rigid_body_state/angular_velocity/y")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let  angular_velocity_z = update.pointer("/value/rigid_body_state/angular_velocity/z")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+
+                                let linear_velocity_x = update.pointer("/value/rigid_body_state/linear_velocity/x")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let linear_velocity_y = update.pointer("/value/rigid_body_state/linear_velocity/y")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let linear_velocity_z = update.pointer("/value/rigid_body_state/linear_velocity/z")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+
+                                lines.push(format!(
+                                        "{},,\"_ball_\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                    time,
+                                    location_x, location_y, location_z,
+                                    rotation_x, rotation_y, rotation_z, rotation_w,
+                                    angular_velocity_x, angular_velocity_y, angular_velocity_z,
+                                    linear_velocity_x, linear_velocity_y, linear_velocity_z
+                                    ));
                             }
                         }
                     }
