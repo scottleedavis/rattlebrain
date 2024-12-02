@@ -35,7 +35,7 @@ Locally
 ```bash
 cargo build --release
 ```
-and/or Docker
+and/or Docker TODO
 Locally
 ```bash
 docker build -t rocket-league-replay-ai-analysis .
@@ -45,7 +45,9 @@ docker build -t rocket-league-replay-ai-analysis .
 
 1. Basic analysis:
 ```bash
-cargo run -- analysis path/to/replay.replay
+cargo run -- extract path/to/replay.replay
+cargo run -- convert output/replay.replay.json
+cargo run -- ai output/replay.replay.json.csv
 ```
 ```bash
 docker run rocket-league-replay-ai-analysis ...

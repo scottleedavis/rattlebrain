@@ -36,7 +36,7 @@ fn main() {
         }
         "convert" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis analysis <input>");
+                println!("Usage: rocket-league-replay-ai-analysis convert <input>");
                 return;
             }
             let input = &args[2];
@@ -77,6 +77,9 @@ fn main() {
                 Ok(response) => println!("AI Response: {}", response),
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }
+        }
+        "analysis" => {
+            
         }
         _ => {
             println!("Unknown command: {}", command);
