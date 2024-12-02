@@ -28,4 +28,7 @@ jobs:
         rm rattletrap-14.0.0-linux-x64.tar.gz
 
     - name: Run tests
-      run: cargo test --verbose
+      run: |
+        pwd
+        cargo test --verbose
+        ls -la
