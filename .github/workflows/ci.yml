@@ -31,4 +31,7 @@ jobs:
       run: |
         pwd
         cargo test --verbose
+
+    - name: Check it
+      run: |
         ls -la
