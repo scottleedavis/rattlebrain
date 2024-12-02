@@ -1,6 +1,7 @@
 use serde_json::Value;
 use std::fs::{self, File};
 use std::io::Write;
+use std::collections::HashMap;
 
 // Main function to analyze replay data
 pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -184,7 +185,6 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-use std::collections::HashMap;
 pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn std::error::Error>> {
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
