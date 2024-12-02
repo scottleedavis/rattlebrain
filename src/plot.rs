@@ -59,7 +59,7 @@ fn plot_match(data: &[GameState], output_file: &str) -> Result<(), Box<dyn Error
             Circle::new((state.location_x, state.location_y), 1, BLACK.filled())
         }))?
         .label("Ball")
-        .legend(|(x, y)| Circle::new((x, y), 1, BLACK.filled()));
+        .legend(|(x, y)| Circle::new((x, y), 5, BLACK.filled()));
 
     // Dynamically identify team IDs
     let mut teams = data
