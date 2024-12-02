@@ -32,8 +32,6 @@ COPILOT_API_KEY="your-api-key-here"
 ```
 
 3. Build the project:
-
-Locally
 ```bash
 cargo build --release
 ```
