@@ -2,7 +2,7 @@ use std::process::Command;
 use std::fs;
 use std::io::{self};
 use serde_json::{json, Value};
-    use std::path::Path;
+use std::path::Path;
     
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
 pub fn extract_replay(input: &str) -> io::Result<()> {
@@ -47,7 +47,8 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
         Err(e) => eprintln!("Error parsing replay: {}", e),
     };
 
-    // fs::remove_file(&json_output).expect("Failed to delete output file");
+    fs::remove_file(&json_output).expect("Failed to delete output file");
+
     Ok(())
 }
 

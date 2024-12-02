@@ -1,5 +1,6 @@
 mod extract;
 mod convert;
+mod plot;
 mod ai;
 
 use std::env;
@@ -64,6 +65,18 @@ fn main() {
             match convert::convert_replay(json_data,input) {
                 Ok(_) => println!("Convert command completed successfully."),
                 Err(e) => eprintln!("Error converting replay: {}", e),
+            }
+        }
+        "plot" => {
+            if args.len() < 3 {
+                println!("Usage: rocket-league-replay-ai-analysis plot <csv>");
+                return;
+            }
+            let csv_file = &args[2];
+            println!("Plotting CSV...");
+            match plot::plot_csv(csv_file) {
+                Ok(_response) => println!("Plot command completed successfully: "),
+                Err(e) => eprintln!("Error plotting: {}", e),
             }
         }
         "ai" => {

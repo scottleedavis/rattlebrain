@@ -177,7 +177,11 @@ fn handle_player_stats(data: &Value, filename: &str) -> Result<(), Box<dyn std::
 }
 
 fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output_path = format!("output/{}.csv", sanitize_filename(filename));
+    let binding = sanitize_filename(filename);
+    let trimmed_file_name = binding.strip_prefix("__output_").unwrap_or(&binding);
+    let output_path = format!("output/{}.csv", trimmed_file_name);
+    // let output_path = format!("output/{}.csv", filename);
+
     let mut file = File::create(output_path)?;
 
     parse_frames(data, &mut file)?;
@@ -195,7 +199,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     let mut lines: Vec<String> = Vec::new();
     let mut ball_id = String::new(); 
     let ball_prefix = "\"Archetypes.Ball.Ball_";
-    lines.push("Time,Team,PlayerName,Location_X,Location_Y,Location_Z,Rotation_X,Rotation_Y,Rotation_Z,Rotations_W,AngularVelocity_X,AngularVelocity_Y,AngularVelocity_Z,LinearVelocity_X,LinearVelocity_Y,LinearVelocity_Z".to_string());
+    lines.push("time,team,player_name,location_x,location_y,location_z,rotation_x,rotation_y,rotation_z,rotation_w,angular_velocity_x,angular_velocity_y,angular_velocity_z,linear_velocity_x,linear_velocity_y,linear_velocity_z".to_string());
 
 
     for frame in frames {
@@ -291,7 +295,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .unwrap_or(0.0);
 
                             lines.push(format!(
-                                "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
+                                "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
                                 time, tname, pname, 
                                 location_x, location_y, location_z, 
                                 rotation_x, rotation_y, rotation_z
@@ -320,7 +324,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                             .unwrap_or(0.0);
 
                         lines.push(format!(
-                            "{},,\"_ball_\",{},{},{},{},{},{},0.0,0,0,0,0,0,0,0",
+                            "{},,\"_ball_\",{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
                             time, 
                             location_x, location_y, location_z, 
                             rotation_x, rotation_y, rotation_z
