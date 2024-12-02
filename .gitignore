@@ -2,4 +2,7 @@ Cargo.lock
 target
 .env
 replay.json
-output
+output/*.json
+output/*.csv
+output/*.png
+output/*.replay
