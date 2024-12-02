@@ -47,7 +47,7 @@ docker build -t rocket-league-replay-ai-analysis .
 ```bash
 cargo run -- extract path/to/some.replay
 cargo run -- convert output/some.replay.json
-cargo run -- ai output/some.replay.json.csv
+cargo run -- analyze output/some.replay.json.csv
 ```
 ```bash
 docker run rocket-league-replay-ai-analysis ...

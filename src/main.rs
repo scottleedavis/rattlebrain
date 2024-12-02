@@ -66,9 +66,9 @@ fn main() {
                 Err(e) => eprintln!("Error converting replay: {}", e),
             }
         }
-        "ai" => {
+        "analyze" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis ai <query>");
+                println!("Usage: rocket-league-replay-ai-analysis analyze <input>");
                 return;
             }
             let query = &args[2];
@@ -77,9 +77,6 @@ fn main() {
                 Ok(response) => println!("AI Response: {}", response),
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }
-        }
-        "analysis" => {
-            
         }
         _ => {
             println!("Unknown command: {}", command);
