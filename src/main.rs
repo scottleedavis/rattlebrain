@@ -1,5 +1,5 @@
 mod extract;
-mod analysis;
+mod convert;
 mod ai;
 
 use std::env;
@@ -35,13 +35,13 @@ fn main() {
                 Err(e) => eprintln!("Error extracting replay: {}", e),
             }
         }
-        "analysis" => {
+        "convert" => {
             if args.len() < 3 {
                 println!("Usage: rocket-league-replay-ai-analysis analysis <input>");
                 return;
             }
             let input = &args[2];
-            println!("Analyzing replay data...");
+            println!("Converting replay data...");
 
             // Read the input file
             let file_content = match fs::read_to_string(input) {
@@ -61,10 +61,10 @@ fn main() {
                 }
             };
 
-            // Analyze the replay
-            match analysis::analyze_replay(json_data,input) {
-                Ok(_) => println!("Analysis command completed successfully."),
-                Err(e) => eprintln!("Error analyzing replay: {}", e),
+            // Convert the replay
+            match convert::convert_replay(json_data,input) {
+                Ok(_) => println!("Convert command completed successfully."),
+                Err(e) => eprintln!("Error converting replay: {}", e),
             }
         }
         "ai" => {

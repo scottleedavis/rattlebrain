@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::io::BufWriter;
 
 // Main function to analyze replay data
-pub fn analyze_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn convert_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
