@@ -27,12 +27,8 @@ Run **RattleBrain** with a replay file - [Download the latest release](https://g
 
 ### Prerequisites
 1. Install **Rattletrap**:
-   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files, and is automatically downloaded if not detected in $PATH.  It can be installed manually as follows.
-     ```bash
-     brew install rattletrap # macOS
-     # or download from the official repository for your OS.
-     # e.g. https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz
-     ```
+   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files, and is automatically downloaded if not detected in $PATH.  [Find the release  for your platform.](https://github.com/tfausak/rattletrap/releases)
+
 2. Obtain API Keys:
    - Get API keys for the AI services you'd like to use (e.g., OpenAI, Claude).
 
