@@ -37,25 +37,19 @@ see the current [TODO.md](TODO.md) for what is in the works.
      export CLAUDE_API_KEY=<your_claude_api_key>
      ```
 
+### Usage
+Run **RattleBrain** with a replay file: ([Download the latest release](https://github.com/scottleedavis/rattlebrain/releases)) (linux only currently)
+```bash
+./rattlebrain analyze <replay_file_or_url>
+```
+
 ### Installation
 Clone the repository and build **RattleBrain**:
 ```bash
 git clone https://github.com/scottleedavis/rattlebrain.git
 cd rattlebrain
 ```
-
-### Usage
-Run **RattleBrain** with a replay file:
-```bash
-./rattlebrain analyze <replay_file_or_url>
-```
-
-Example:
-```bash
-./rattlebrain analyze ./my_replay.replay
-```
-
-### Building/Testing
+#### Building/Testing
 
 ```bash
 cargo build --release
