@@ -9,7 +9,13 @@ It provides nified reporting, including outputs from all AI feedback and extract
 - Generate AI-powered analysis using a choice (or all) of ChatGPT, Claude, Gemini or Copilot APIs
 - Provide tactical insights and improvement suggestions
 
-## Prerequisites
+## Usage
+
+```
+./rl_replay_ai analysis /path/or/url/to/some.replay
+```
+
+## Build Prerequisites
 
 - Rust (latest stable version)
 - Claude, ChatGPT, Gemini and/or Copilot API keys
@@ -31,54 +37,25 @@ GEMINI_API_KEY="your-api-key-here"
 COPILOT_API_KEY="your-api-key-here"
 ```
 
-3. Build the project:
+3. Build with cargo:
 ```bash
 cargo build --release
 ```
 
-## Usage
-
+Running with cargo
 ```bash
 cargo run -- analysis path/to/some.replay
 # or
 cargo run -- analysis http://url/to/some.replay
 ```
 
-
-## Testing
-
-Extract Replay Data:
+Testing:
 ```bash
 cargo test
 ```
 
 Ensure .env is set up properly.
 Test with one or both API keys to ensure fallback mechanisms work.
-
-## Configuration
-
-The analyzer can be configured through command-line arguments or environment variables:
-
-Claude
-- `CLAUDE_API_KEY`: Your Claude API key
-- `RL_ANALYZER_MODEL`: Claude model to use (default: "claude-3-sonnet-20240229")
-- `RL_ANALYZER_LOG_LEVEL`: Log level (default: "info")
-
-
-ChatGPT
-- `OPENAI_API_KEY`: Your ChatGPT API key 
-- ..
-
-
-Gemini
-- `GEMINI_API_KEY`: Your Gemini API key
-- ..
-
-
-Copilot
-- `COPILOT_API_KEY`: Your Copilot API key
-- ..
-
 
 
 ## Contributing
