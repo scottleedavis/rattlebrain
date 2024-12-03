@@ -74,12 +74,12 @@ jobs:
       - name: Package Binary
         run: |
           mkdir -p release
-          cp target/release/rattlebrain release/
+          cp target/release/rattlebrain release/rattlebrain
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: rattlebrain.tar.gz
+          artifacts: release/rattlebrain
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
