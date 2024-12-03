@@ -12,7 +12,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        println!("Usage: rocket-league-replay-ai-analysis <command> [options]");
+        println!("Usage: rl_replay_ai <command> [options]");
         println!("Commands:");
         println!(" analysis <path/some.replay> - Analyze replay data. (runs extract, convert, plot and ai in sequence)");
         println!(" extract <path/some.replay> - Extract replay data to CSV.");

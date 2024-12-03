@@ -1,11 +1,11 @@
 [package]
-name = "rocket-league-replay-ai-analysis"
+name = "rl_replay_ai"
 version = "0.1.0"
 edition = "2021"
-authors = ["Scott Davis <scottleedavisl@gmail.com>"]
+authors = ["Scott Davis <scottleedavis@gmail.com>"]
 description = "A Rocket League replay analyzer using Multiple AI agents"
 license = "MIT"
-repository = "https://github.com/yourusername/rocket-league-ai-analysis"
+repository = "https://github.com/scottleedavis/rl_replay_ai"
 
 [dependencies]
 csv = "1.1"
@@ -18,5 +18,5 @@ jsonschema = "0.16"
 plotters = "0.3"
 
 [lib]
-name = "rocket_league_replay_ai_analysis"
+name = "rl_replay_ai"
 path = "src/lib.rs"

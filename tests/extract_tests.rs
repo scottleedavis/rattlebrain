@@ -1,4 +1,4 @@
-use rocket_league_replay_ai_analysis::extract;
+use rl_replay_ai::extract;
 use std::process::Command;
 use std::{fs, path::Path};
 use jsonschema::{JSONSchema, Draft};

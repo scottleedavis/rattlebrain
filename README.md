@@ -1,6 +1,6 @@
-# rocket-league-ai-analysis
+# rl_replay_ai
 
-A command-line fully Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  I utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
+A command-line Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  I utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
 It provides nified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
 
 ## Features
@@ -19,8 +19,8 @@ It provides nified reporting, including outputs from all AI feedback and extract
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/scottleedavis/rocket-league-ai-analysis.git
-cd rocket-league-ai-analysis
+git clone https://github.com/scottleedavis/rl_replay_ai.git
+cd rl_replay_ai
 ```
 
 2. Create a `.env` file in the project root.  Any/all key(s) optional for AI feedback:
