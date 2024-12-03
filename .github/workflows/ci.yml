@@ -83,6 +83,6 @@ jobs:
           artifacts: rattlebrain.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
-          releaseName: "Release ${{ github.ref_name }}"
+          name: "Release ${{ github.ref_name }}"
           draft: false
           prerelease: false
