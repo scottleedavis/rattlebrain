@@ -125,7 +125,7 @@ fn main() {
                 process::exit(1);
             }
 
-            // // Step 3: Plot
+            // Step 3: Plot
             let json_frames_replay = format!("./output/{}.frames.json",json_replay_filename);
             let csv_file = format!("{}.csv", json_frames_replay); 
             println!("Plotting data from csv: {}", csv_file);

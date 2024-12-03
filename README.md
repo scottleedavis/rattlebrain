@@ -1,7 +1,7 @@
 # rl_replay_ai
 
-A command-line Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  I utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
-It provides nified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
+A command-line Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  It utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
+It provides unified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
 
 ## Features
 
@@ -9,19 +9,19 @@ It provides nified reporting, including outputs from all AI feedback and extract
 - Generate AI-powered analysis using a choice (or all) of ChatGPT, Claude, Gemini or Copilot APIs
 - Provide tactical insights and improvement suggestions
 
-## Usage
+## cli Usage
 
 ```
 ./rl_replay_ai analysis /path/or/url/to/some.replay
 ```
 
-## Build Prerequisites
+## Local Build Prerequisites
 
 - Rust (latest stable version)
 - Claude, ChatGPT, Gemini and/or Copilot API keys
 - Rocket League replay files
 
-## Installation
+## Local Installation
 
 1. Clone the repository:
 ```bash
