@@ -184,8 +184,6 @@ fn handle_frames(data: &Value, filename: &str) -> Result<(), Box<dyn std::error:
     let binding = sanitize_filename(filename);
     let trimmed_file_name = binding.strip_prefix("__output_").unwrap_or(&binding);
     let output_path = format!("output/{}.csv", trimmed_file_name);
-    // let output_path = format!("output/{}.csv", filename);
-
     let mut file = File::create(output_path)?;
 
     parse_frames(data, &mut file)?;
@@ -200,13 +198,14 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     let mut player_map: HashMap<String, String> = HashMap::new();
     let mut team_map: HashMap<String, String> = HashMap::new();
     let mut car_map: HashMap<String, String> = HashMap::new();
+    let mut car_boost_map: HashMap<String, i64> = HashMap::new();
     let mut lines: Vec<String> = Vec::new();
     let mut ball_id = String::new(); 
     let ball_prefix = "\"Archetypes.Ball.Ball_";
-    lines.push("time,team,player_name,location_x,location_y,location_z,rotation_x,rotation_y,rotation_z,rotation_w,angular_velocity_x,angular_velocity_y,angular_velocity_z,linear_velocity_x,linear_velocity_y,linear_velocity_z".to_string());
+    lines.push("frame,time,team,player_name,boost,location_x,location_y,location_z,rotation_x,rotation_y,rotation_z,rotation_w,angular_velocity_x,angular_velocity_y,angular_velocity_z,linear_velocity_x,linear_velocity_y,linear_velocity_z".to_string());
 
+    for (frame_index, frame) in frames.iter().enumerate() {
 
-    for frame in frames {
         // let delta = frame.get("delta").unwrap_or(&Value::Null).to_string();
         let time = frame.get("time").unwrap_or(&Value::Null).to_string();
 
@@ -259,7 +258,22 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 }
 
                             }
-                        } 
+                        } else if name == "\"TAGame.CarComponent_Boost_TA:ReplicatedBoost\"" {
+                             if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
+                                if let Some(value_int) = update
+                                    .get("value")
+                                    .and_then(|value| value.get("boost"))
+                                    .and_then(|value| value.get("boostAmount"))
+                                    .and_then(|int_value| int_value.as_i64())
+
+                                {
+                                    car_boost_map.insert(actor_id.clone(), value_int);                                    
+                                }
+                             } else {
+                                //where is this boost
+                             }
+                            
+                        }
                     }
                 }
             }
@@ -278,6 +292,8 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                         if obj_name == "\"Archetypes.Car.Car_Default\""{
                             let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
                             let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+                            let boost = car_boost_map.get(cname).copied().unwrap_or(0);
+
                             let location_x = spawned.pointer("/initialization/location/x")
                                 .and_then(Value::as_i64)
                                 .unwrap_or(0);
@@ -299,12 +315,13 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .unwrap_or(0.0);
 
                             lines.push(format!(
-                                "{},{},\"{}\",{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
-                                time, tname, pname, 
+                                "{},{},{},\"{}\",{},{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
+                                frame_index, time, tname, pname, boost,
                                 location_x, location_y, location_z, 
                                 rotation_x, rotation_y, rotation_z
                             ));
-                        }
+                        } 
+
                     } else if actor_id == ball_id {
 
                     //     let location_x = spawned.pointer("/initialization/location/x")
@@ -350,6 +367,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 if cname != "Unknown" {
                                     let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
                                     let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+                                    let boost = car_boost_map.get(cname).copied().unwrap_or(0);
 
                                     let location_x = update.pointer("/value/rigid_body_state/location/x")
                                         .and_then(Value::as_i64)
@@ -395,8 +413,8 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                         .unwrap_or(0.0);
 
                                     lines.push(format!(
-                                         "{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
-                                        time, tname, pname,
+                                         "{},{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                        frame_index, time, tname, pname, boost,
                                         location_x, location_y, location_z,
                                         rotation_x, rotation_y, rotation_z, rotation_w,
                                         angular_velocity_x, angular_velocity_y, angular_velocity_z,
@@ -450,15 +468,15 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                     .unwrap_or(0.0);
 
                                 lines.push(format!(
-                                        "{},,\"_ball_\",{},{},{},{},{},{},{},{},{},{},{},{},{}",
-                                    time,
+                                        "{},{},,\"_ball_\",,{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                    frame_index, time,
                                     location_x, location_y, location_z,
                                     rotation_x, rotation_y, rotation_z, rotation_w,
                                     angular_velocity_x, angular_velocity_y, angular_velocity_z,
                                     linear_velocity_x, linear_velocity_y, linear_velocity_z
                                     ));
                             }
-                        }
+                        } 
                     }
                 }
             }

@@ -123,55 +123,6 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
     Ok(())
 }
 
-// /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
-// pub fn extract_replay(input: &str) -> io::Result<()> {
-//     let rattletrap_path = "./rattletrap"; 
-
-
-//     let filename = Path::new(&input).file_name()
-//         .unwrap_or_else(|| Path::new(&input).as_os_str())
-//         .to_str()
-//         .unwrap_or(input);
-
-//     let json_output = format!("./output/{}.json", filename);
-//     // Run the rattletrap command
-//     let output_status = Command::new(rattletrap_path)
-//         .arg("--input")
-//         .arg(input)
-//         .arg("--output")
-//         .arg(&json_output)
-//         .output();
-
-//     match output_status {
-//         Ok(output) => {
-//             if !output.status.success() {
-//                 eprintln!(
-//                     "Failed to extract replay data. Error: {}",
-//                     String::from_utf8_lossy(&output.stderr)
-//                 );
-//                 return Err(io::Error::new(io::ErrorKind::Other, "Rattletrap failed"));
-//             }
-//         }
-//         Err(e) => {
-//             eprintln!("Failed to execute rattletrap: {}", e);
-//             return Err(e);
-//         }
-//     }
-
-//     let json_data = fs::read_to_string(&json_output)?;
-//     let parsed_data: serde_json::Value = serde_json::from_str(&json_data)?;
-
-//     match parse_replay(parsed_data) {
-//         Ok(_) => println!("Replay data parsed successfully."),
-//         Err(e) => eprintln!("Error parsing replay: {}", e),
-//     };
-
-//     fs::remove_file(&json_output).expect("Failed to delete output file");
-
-//     Ok(())
-// }
-
-
 pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     let match_guid = find_property(
         data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
@@ -183,28 +134,28 @@ pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
-    // let header_map = parse_header(&data);
-    // save_to_file(&header_map, output_dir, &match_guid, "header")?;
+    let header_map = parse_header(&data);
+    save_to_file(&header_map, output_dir, &match_guid, "header")?;
 
-    // let goals = parse_goals(
-    //     data.pointer("/header/body/properties/elements")
-    //         .unwrap_or(&Value::Array(vec![])),
-    // );
-    // save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
-
-
-    // let player_stats = parse_player_stats(
-    //     data.pointer("/header/body/properties/elements")
-    //         .unwrap_or(&Value::Array(vec![])),
-    // );
-    // save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
+    let goals = parse_goals(
+        data.pointer("/header/body/properties/elements")
+            .unwrap_or(&Value::Array(vec![])),
+    );
+    save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
 
 
-    // let highlights = parse_highlights(
-    //     data.pointer("/header/body/properties/elements")
-    //         .unwrap_or(&Value::Array(vec![])),
-    // );
-    // save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
+    let player_stats = parse_player_stats(
+        data.pointer("/header/body/properties/elements")
+            .unwrap_or(&Value::Array(vec![])),
+    );
+    save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
+
+
+    let highlights = parse_highlights(
+        data.pointer("/header/body/properties/elements")
+            .unwrap_or(&Value::Array(vec![])),
+    );
+    save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
     let frames = parse_frames(
         data.pointer("/content/body/frames")
