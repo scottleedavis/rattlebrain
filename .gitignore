@@ -6,4 +6,4 @@ output/*.json
 output/*.csv
 output/*.png
 output/*.replay
-rattletrap
+rattletrap*
