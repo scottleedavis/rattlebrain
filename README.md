@@ -27,7 +27,7 @@ Run **RattleBrain** with a replay file - [Download the latest release](https://g
 
 ### Prerequisites
 1. Install **Rattletrap**:
-   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files, and is automatically downloaded if not detected.  It can be installed manually as follows.
+   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files, and is automatically downloaded if not detected in $PATH.  It can be installed manually as follows.
      ```bash
      brew install rattletrap # macOS
      # or download from the official repository for your OS.
