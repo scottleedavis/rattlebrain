@@ -1,79 +1,126 @@
-# rl_replay_ai
+# RattleBrain
 
-A command-line Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  It utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
-It provides unified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
+**RattleBrain** is a command-line tool, written in Rust, designed to bring the power of AI to your **Rocket League** replay analysis. By leveraging **[Rattletrap](https://github.com/tfausak/rattletrap)** for parsing replay files and connecting to one or more AI services (e.g., OpenAI, Claude), RattleBrain extracts tactical insights, performance metrics, and actionable feedback to help you elevate your gameplay.
 
-see [TODO.md](TODO.md)
+see the current [TODO.md](TODO.md) for what is in the works.
+
+---
 
 ## Features
 
-- Parse Rocket League replay files and extract detailed game statistics and events
-- Generate AI-powered analysis using a choice (or all) of ChatGPT, Claude, Gemini or Copilot APIs
-- Provide tactical insights and improvement suggestions
+- **AI-Enhanced Analysis**: Analyze Rocket League replay files with the help of AI services for in-depth insights.
+- **Dynamic AI Selection**: Automatically detects and configures available AI services via environment variables (e.g., `OPENAI_API_KEY`, `CLAUDE_API_KEY`).
+- **Unified Reporting**: Combines outputs from multiple AI agents into a single, comprehensive report.
+- **Tactical Insights**: Highlights key plays, strategic opportunities, and areas for improvement.
+- **Performance Metrics**: Extracts useful data points to track your progress over time.
+- **Lightweight and Fast**: Built with Rust for performance and efficiency.
 
-## cli Usage
+---
 
-```
-./rl_replay_ai analysis /path/or/url/to/some.replay
-```
+## Getting Started
 
-## Local Build Prerequisites
+### Prerequisites
+1. Install **Rattletrap**:
+   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files. It is pre-packaged, or you can install it before proceeding:
+     ```bash
+     brew install rattletrap # macOS
+     # or download from the official repository for your OS
+     ```
+2. Obtain API Keys:
+   - Get API keys for the AI services you'd like to use (e.g., OpenAI, Claude).
 
-- Rust (latest stable version)
-- Claude, ChatGPT, Gemini and/or Copilot API keys
-- Rocket League replay files
+3. Set Environment Variables:
+   - Add your API keys to your environment variables:
+     ```bash
+     export OPENAI_API_KEY=<your_openai_api_key>
+     export CLAUDE_API_KEY=<your_claude_api_key>
+     ```
 
-## Local Installation
-
-1. Clone the repository:
+### Installation
+Clone the repository and build **RattleBrain**:
 ```bash
-git clone https://github.com/scottleedavis/rl_replay_ai.git
-cd rl_replay_ai
-```
-
-2. Create a `.env` file in the project root.  Any/all key(s) optional for AI feedback:
-```bash
-CLAUDE_API_KEY="your-api-key-here"
-OPENAI_API_KEY="your-api-key-here"
-GEMINI_API_KEY="your-api-key-here"
-COPILOT_API_KEY="your-api-key-here"
-```
-
-3. Build with cargo:
-```bash
+git clone https://github.com/scottleedavis/rattlebrain.git
+cd rattlebrain
 cargo build --release
 ```
 
-Running with cargo
+### Usage
+Run **RattleBrain** with a replay file:
 ```bash
-cargo run -- analysis path/to/some.replay
-# or
-cargo run -- analysis http://url/to/some.replay
+./rattlebrain analyze <replay_file_or_url>
 ```
 
-Testing:
+Example:
+```bash
+./rattlebrain analyze ./my_replay.replay
+```
+
+---
+
+## How It Works
+
+1. **Parsing Replays**: 
+   RattleBrain uses **Rattletrap** to decode Rocket League replay files into a structured format.
+
+2. **AI Integration**: 
+   - Depending on the environment variables detected, RattleBrain connects to one or more AI services.
+   - Each AI service processes the replay data, generating unique feedback and insights.
+
+3. **Unified Report**:
+   - Outputs from all AI services are combined into a single, readable report, highlighting tactical analysis, performance metrics, and key observations.
+
+---
+
+## Example Output
+
+```
+--- RattleBrain Unified Report ---
+Replay File: my_replay.replay
+Game Summary:
+- Goals: 3
+- Assists: 2
+- Saves: 4
+
+AI Insights:
+1. **OpenAI Feedback**:
+   - Your defensive positioning was strong, but over-committing led to missed opportunities.
+   - Suggested drills: defensive rotations and wall clears.
+
+2. **Claude Feedback**:
+   - Observed a consistent issue with boost management. Work on boost path efficiency.
+   - Recommended playstyle: Aggressive play with controlled boost usage.
+
+Performance Metrics:
+- Average Speed: 1233 UPS
+- Boost Usage Efficiency: 78%
+- Aerial Success Rate: 65%
+```
+
+## Testing
+
 ```bash
 cargo test
 ```
 
-Ensure .env is set up properly.
-Test with one or both API keys to ensure fallback mechanisms work.
-
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
 
 ## Acknowledgments
 
-- [rattletrap](https://github.com/tfausak/rattletrap) - Rocket League replay parser
-- [rocketleague-replay-coach](https://github.com/scottleedavis/rocketleague-replay-coach) - ChatGPT proof of concept with python
-- [Anthropic](https://anthropic.com) - Claude AI API
+- **[Rattletrap](https://github.com/tfausak/rattletrap)**: RattleBrain wouldn’t be possible without this fantastic replay parser. Kudos to the creators and maintainers for providing such a robust tool!
+- **AI Service Providers**: OpenAI, Claude, and others for their advanced language models powering this tool.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request if you’d like to improve RattleBrain.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+Feel free to let me know if you'd like to customize this further!

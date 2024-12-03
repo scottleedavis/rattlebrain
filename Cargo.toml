@@ -1,11 +1,11 @@
 [package]
-name = "rl_replay_ai"
+name = "rattlebrain"
 version = "0.1.0"
 edition = "2021"
 authors = ["Scott Davis <scottleedavis@gmail.com>"]
 description = "A Rocket League replay analyzer using Multiple AI agents"
 license = "MIT"
-repository = "https://github.com/scottleedavis/rl_replay_ai"
+repository = "https://github.com/scottleedavis/rattlebrain"
 
 [dependencies]
 csv = "1.1"
@@ -18,5 +18,5 @@ jsonschema = "0.16"
 plotters = "0.3"
 
 [lib]
-name = "rl_replay_ai"
+name = "rattlebrain"
 path = "src/lib.rs"

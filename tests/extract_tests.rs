@@ -1,4 +1,4 @@
-use rl_replay_ai::extract;
+use rattlebrain::extract;
 use std::process::Command;
 use std::{fs, path::Path};
 use jsonschema::{JSONSchema, Draft};
