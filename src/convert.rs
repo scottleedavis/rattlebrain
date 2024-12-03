@@ -303,32 +303,32 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                         }
                     } else if actor_id == ball_id {
 
-                        let location_x = spawned.pointer("/initialization/location/x")
-                            .and_then(Value::as_i64)
-                            .unwrap_or(0);
-                        let location_y = spawned.pointer("/initialization/location/y")
-                            .and_then(Value::as_i64)
-                            .unwrap_or(0);
-                        let location_z = spawned.pointer("/initialization/location/z")
-                            .and_then(Value::as_i64)
-                            .unwrap_or(0);
+                    //     let location_x = spawned.pointer("/initialization/location/x")
+                    //         .and_then(Value::as_i64)
+                    //         .unwrap_or(0);
+                    //     let location_y = spawned.pointer("/initialization/location/y")
+                    //         .and_then(Value::as_i64)
+                    //         .unwrap_or(0);
+                    //     let location_z = spawned.pointer("/initialization/location/z")
+                    //         .and_then(Value::as_i64)
+                    //         .unwrap_or(0);
 
-                        let rotation_x = spawned.pointer("/initialization/rotation/x")
-                            .and_then(Value::as_f64)
-                            .unwrap_or(0.0);
-                        let rotation_y = spawned.pointer("/initialization/rotation/y")
-                            .and_then(Value::as_f64)
-                            .unwrap_or(0.0);
-                        let rotation_z = spawned.pointer("/initialization/rotation/z")
-                            .and_then(Value::as_f64)
-                            .unwrap_or(0.0);
+                    //     let rotation_x = spawned.pointer("/initialization/rotation/x")
+                    //         .and_then(Value::as_f64)
+                    //         .unwrap_or(0.0);
+                    //     let rotation_y = spawned.pointer("/initialization/rotation/y")
+                    //         .and_then(Value::as_f64)
+                    //         .unwrap_or(0.0);
+                    //     let rotation_z = spawned.pointer("/initialization/rotation/z")
+                    //         .and_then(Value::as_f64)
+                    //         .unwrap_or(0.0);
 
-                        lines.push(format!(
-                            "{},,\"_ball_\",{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
-                            time, 
-                            location_x, location_y, location_z, 
-                            rotation_x, rotation_y, rotation_z
-                        ));
+                    //     lines.push(format!(
+                    //         "{},,\"_ball_\",{},{},{},{},{},{},0.0,0,0,0,0.0,0.0,0.0",
+                    //         time, 
+                    //         location_x, location_y, location_z, 
+                    //         rotation_x, rotation_y, rotation_z
+                    //     ));
                     }
                 }
 
