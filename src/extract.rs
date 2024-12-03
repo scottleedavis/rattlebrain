@@ -64,34 +64,34 @@ pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
 
-    let header_map = parse_header(&data);
-    save_to_file(&header_map, output_dir, &match_guid, "header")?;
+    // let header_map = parse_header(&data);
+    // save_to_file(&header_map, output_dir, &match_guid, "header")?;
 
-    let goals = parse_goals(
-        data.pointer("/header/body/properties/elements")
-            .unwrap_or(&Value::Array(vec![])),
-    );
-    save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
-
-
-    let player_stats = parse_player_stats(
-        data.pointer("/header/body/properties/elements")
-            .unwrap_or(&Value::Array(vec![])),
-    );
-    save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
+    // let goals = parse_goals(
+    //     data.pointer("/header/body/properties/elements")
+    //         .unwrap_or(&Value::Array(vec![])),
+    // );
+    // save_to_file(&Value::Array(goals), output_dir, &match_guid, "goals")?;
 
 
-    let highlights = parse_highlights(
-        data.pointer("/header/body/properties/elements")
-            .unwrap_or(&Value::Array(vec![])),
-    );
-    save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
+    // let player_stats = parse_player_stats(
+    //     data.pointer("/header/body/properties/elements")
+    //         .unwrap_or(&Value::Array(vec![])),
+    // );
+    // save_to_file(&Value::Array(player_stats), output_dir, &match_guid, "player_stats")?;
+
+
+    // let highlights = parse_highlights(
+    //     data.pointer("/header/body/properties/elements")
+    //         .unwrap_or(&Value::Array(vec![])),
+    // );
+    // save_to_file(&Value::Array(highlights), output_dir, &match_guid, "highlights")?;
 
     let frames = parse_frames(
         data.pointer("/content/body/frames")
             .unwrap_or(&Value::Array(vec![])),
     );
-    save_to_file(&Value::Array(frames), output_dir, &match_guid, "frames")?;
+    save_to_file(&Value::Array(frames), output_dir, &match_guid, "replay.frames")?;
 
     Ok(())
 }

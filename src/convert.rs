@@ -3,6 +3,7 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::collections::HashMap;
 use std::io::BufWriter;
+use std::path::Path;
 
 // Main function to analyze replay data
 pub fn convert_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -33,7 +34,10 @@ pub fn convert_replay(data: Value, filename: &str) -> Result<(), Box<dyn std::er
 }
 
 fn sanitize_filename(filename: &str) -> String {
-    filename.replace("/", "_").replace("\\", "_").replace(".", "_")
+    Path::new(filename)
+        .file_name()
+        .map(|os_str| os_str.to_string_lossy().to_string())
+        .unwrap_or_else(|| "".to_string()) // Return an empty string if file_name() is None
 }
 
 fn handle_header(data: &Value, filename: &str) -> Result<(), Box<dyn std::error::Error>> {

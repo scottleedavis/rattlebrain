@@ -39,9 +39,9 @@ cargo build --release
 ## Usage
 
 ```bash
-cargo run -- extract path/to/some.replay
-cargo run -- convert output/some.replay.json
-cargo run -- analyze output/some.replay.json.csv
+cargo run -- analysis path/to/some.replay
+# or
+cargo run -- analysis http://url/to/some.replay
 ```
 
 
