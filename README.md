@@ -20,7 +20,7 @@ see the current [TODO.md](TODO.md) for what is in the works.
 ## Getting Started
 
 ### Usage
-[Download and Run the latest release](https://github.com/scottleedavis/rattlebrain/releases) of **RattleBrain** with a replay file - 
+[Download](https://github.com/scottleedavis/rattlebrain/releases) and Run the latest release of **RattleBrain** with a replay file
 ```bash
 ./rattlebrain analyze <replay_file_or_url>
 ```
