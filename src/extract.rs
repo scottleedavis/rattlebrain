@@ -3,25 +3,96 @@ use std::fs;
 use std::io::{self};
 use serde_json::{json, Value};
 use std::path::Path;
-    
+use std::io::{Error, ErrorKind};
+
+
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
 pub fn extract_replay(input: &str) -> io::Result<()> {
-    let rattletrap_path = "./rattletrap"; 
+    let rattletrap_name = "rattletrap";
+    let rattletrap_path = Path::new(rattletrap_name);
 
+    // Check if rattletrap exists in PATH
+    let rattletrap_exists = Command::new("which")
+        .arg(rattletrap_name)
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false);
 
-    let filename = Path::new(&input).file_name()
+    // If not, download it locally
+    if !rattletrap_exists && !rattletrap_path.exists() {
+        println!("Rattletrap not found. Downloading...");
+        let download_url = "https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz";
+        let tar_file = "rattletrap-14.0.0-linux-x64.tar.gz";
+
+        // Download the tar.gz
+        let wget_status = Command::new("wget")
+            .arg("-q")
+            .arg(download_url)
+            .status()?;
+
+        if !wget_status.success() {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Failed to download Rattletrap.",
+            ));
+        }
+
+        // Extract the tar.gz
+        let tar_status = Command::new("tar")
+            .args(&["-xzf", tar_file])
+            .status()?;
+
+        if !tar_status.success() {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Failed to extract Rattletrap.",
+            ));
+        }
+
+        // Make the binary executable
+        let chmod_status = Command::new("chmod")
+            .args(&["+x", rattletrap_name])
+            .status()?;
+
+        if !chmod_status.success() {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Failed to set executable permissions for Rattletrap.",
+            ));
+        }
+        println!("Rattletrap downloaded.");
+
+        // Cleanup tar.gz file
+        fs::remove_file(tar_file)?;
+    }
+
+    // Ensure the binary is executable
+    if !rattletrap_path.exists() && !rattletrap_exists {
+        return Err(Error::new(
+            ErrorKind::NotFound,
+            "Rattletrap binary not found or failed to download.",
+        ));
+    }
+
+    let filename = Path::new(&input)
+        .file_name()
         .unwrap_or_else(|| Path::new(&input).as_os_str())
         .to_str()
         .unwrap_or(input);
 
     let json_output = format!("./output/{}.json", filename);
+
     // Run the rattletrap command
-    let output_status = Command::new(rattletrap_path)
-        .arg("--input")
-        .arg(input)
-        .arg("--output")
-        .arg(&json_output)
-        .output();
+    let output_status = Command::new(if rattletrap_exists {
+        rattletrap_name
+    } else {
+        "./rattletrap"
+    })
+    .arg("--input")
+    .arg(input)
+    .arg("--output")
+    .arg(&json_output)
+    .output();
 
     match output_status {
         Ok(output) => {
@@ -34,7 +105,7 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
             }
         }
         Err(e) => {
-            eprintln!("Failed to execute rattletrap: {}", e);
+            eprintln!("Failed to execute Rattletrap: {}", e);
             return Err(e);
         }
     }
@@ -51,6 +122,54 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
 
     Ok(())
 }
+
+// /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
+// pub fn extract_replay(input: &str) -> io::Result<()> {
+//     let rattletrap_path = "./rattletrap"; 
+
+
+//     let filename = Path::new(&input).file_name()
+//         .unwrap_or_else(|| Path::new(&input).as_os_str())
+//         .to_str()
+//         .unwrap_or(input);
+
+//     let json_output = format!("./output/{}.json", filename);
+//     // Run the rattletrap command
+//     let output_status = Command::new(rattletrap_path)
+//         .arg("--input")
+//         .arg(input)
+//         .arg("--output")
+//         .arg(&json_output)
+//         .output();
+
+//     match output_status {
+//         Ok(output) => {
+//             if !output.status.success() {
+//                 eprintln!(
+//                     "Failed to extract replay data. Error: {}",
+//                     String::from_utf8_lossy(&output.stderr)
+//                 );
+//                 return Err(io::Error::new(io::ErrorKind::Other, "Rattletrap failed"));
+//             }
+//         }
+//         Err(e) => {
+//             eprintln!("Failed to execute rattletrap: {}", e);
+//             return Err(e);
+//         }
+//     }
+
+//     let json_data = fs::read_to_string(&json_output)?;
+//     let parsed_data: serde_json::Value = serde_json::from_str(&json_data)?;
+
+//     match parse_replay(parsed_data) {
+//         Ok(_) => println!("Replay data parsed successfully."),
+//         Err(e) => eprintln!("Error parsing replay: {}", e),
+//     };
+
+//     fs::remove_file(&json_output).expect("Failed to delete output file");
+
+//     Ok(())
+// }
 
 
 pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
