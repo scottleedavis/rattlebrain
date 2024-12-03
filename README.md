@@ -21,10 +21,10 @@ see the current [TODO.md](TODO.md) for what is in the works.
 
 ### Prerequisites
 1. Install **Rattletrap**:
-   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files. It is pre-packaged, or you can install it before proceeding:
+   - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files. It will be automatically downloaded if not detected, or you can install it before proceeding:
      ```bash
      brew install rattletrap # macOS
-     # or download from the official repository for your OS
+     # or download from the official repository for your OS.  e.g. https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz
      ```
 2. Obtain API Keys:
    - Get API keys for the AI services you'd like to use (e.g., OpenAI, Claude).
