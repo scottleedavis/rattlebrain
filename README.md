@@ -3,6 +3,8 @@
 A command-line Rust-based replay analysis tool that analyzes Rocket League replay files using one or more AI services.  It utilizes smart environment variable detection for API keys to dynamically select AI interfaces (e.g., OpenAI, Claude).
 It provides unified reporting, including outputs from all AI feedback and extracts meaningful insights, tactical analysis, and performance metrics from your replays.
 
+see [TODO.md](TODO.md)
+
 ## Features
 
 - Parse Rocket League replay files and extract detailed game statistics and events
