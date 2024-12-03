@@ -41,7 +41,6 @@ Clone the repository and build **RattleBrain**:
 ```bash
 git clone https://github.com/scottleedavis/rattlebrain.git
 cd rattlebrain
-cargo build --release
 ```
 
 ### Usage
@@ -53,6 +52,13 @@ Run **RattleBrain** with a replay file:
 Example:
 ```bash
 ./rattlebrain analyze ./my_replay.replay
+```
+
+### Building/Testing
+
+```bash
+cargo build --release
+cargo test
 ```
 
 ---
