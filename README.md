@@ -19,6 +19,12 @@ see the current [TODO.md](TODO.md) for what is in the works.
 
 ## Getting Started
 
+### Usage
+Run **RattleBrain** with a replay file: ([Download the latest release](https://github.com/scottleedavis/rattlebrain/releases)) (linux only currently)
+```bash
+./rattlebrain analyze <replay_file_or_url>
+```
+
 ### Prerequisites
 1. Install **Rattletrap**:
    - RattleBrain uses [Rattletrap](https://github.com/tfausak/rattletrap) to parse replay files. It will be automatically downloaded if not detected, or you can install it before proceeding:
@@ -36,12 +42,6 @@ see the current [TODO.md](TODO.md) for what is in the works.
      export OPENAI_API_KEY=<your_openai_api_key>
      export CLAUDE_API_KEY=<your_claude_api_key>
      ```
-
-### Usage
-Run **RattleBrain** with a replay file: ([Download the latest release](https://github.com/scottleedavis/rattlebrain/releases)) (linux only currently)
-```bash
-./rattlebrain analyze <replay_file_or_url>
-```
 
 ### Installation
 Clone the repository and build **RattleBrain**:
