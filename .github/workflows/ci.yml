@@ -86,31 +86,3 @@ jobs:
           releaseName: "Release ${{ github.ref_name }}"
           draft: false
           prerelease: false
-
-# name: CI
-
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
-
-# env:
-#   CARGO_TERM_COLOR: always
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v2
-#     - name: Build
-#       run: cargo build --verbose
-#     - name: Download and Extract Rattletrap
-#       run: |
-#         wget -q https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz
-#         tar -xzf rattletrap-14.0.0-linux-x64.tar.gz
-#         chmod +x rattletrap
-#         rm rattletrap-14.0.0-linux-x64.tar.gz
-
-#     - name: Run tests
-#       run: cargo test --verbose
