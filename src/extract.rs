@@ -7,7 +7,7 @@ use std::io::{Error, ErrorKind};
 
 
 /// Parses a Rocket League replay file using the `rattletrap` CLI and writes the result to a CSV file.
-pub fn extract_replay(input: &str) -> io::Result<()> {
+pub fn extract_replay(input: &str) -> io::Result<String> {
     let rattletrap_name = "rattletrap";
     let rattletrap_path = Path::new(rattletrap_name);
 
@@ -113,24 +113,25 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
 
     let json_data = fs::read_to_string(&json_output)?;
     let parsed_data: serde_json::Value = serde_json::from_str(&json_data)?;
+    let match_guid = find_property(
+        parsed_data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
+        "MatchGuid",
+    )
+    .and_then(|v| v.as_str().map(|s| s.to_string()))
+    .unwrap_or_else(|| "unknown_match_guid".to_string());
 
-    match parse_replay(parsed_data) {
+    match parse_replay(parsed_data, match_guid.clone()) {
         Ok(_) => println!("Replay data parsed successfully."),
         Err(e) => eprintln!("Error parsing replay: {}", e),
     };
 
     fs::remove_file(&json_output).expect("Failed to delete output file");
 
-    Ok(())
+    Ok(match_guid)
 }
 
-pub fn parse_replay(data: Value) -> Result<(), Box<dyn std::error::Error>> {
-    let match_guid = find_property(
-        data.pointer("/header/body/properties/elements").unwrap_or(&Value::Null),
-        "MatchGuid",
-    )
-    .and_then(|v| v.as_str().map(|s| s.to_string()))
-    .unwrap_or_else(|| "unknown_match_guid".to_string());
+
+fn parse_replay(data: Value, match_guid: String) -> Result<(), Box<dyn std::error::Error>> {
 
     let output_dir = "output";
     fs::create_dir_all(output_dir)?;
