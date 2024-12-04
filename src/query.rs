@@ -1,13 +1,11 @@
-use std::env;
-use std::io;
 use crate::ai::openai;
+use crate::ai::anthropic;
 
 use std::fs;
-// use flate2::write::GzEncoder;
-// use flate2::Compression;
+use std::env;
+use std::io;
 use base64::{Engine as _};
 use std::io::Write;
-
 use csv::{ReaderBuilder, Writer};
 use std::error::Error;
 use std::collections::HashMap;
@@ -96,24 +94,25 @@ pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
 
     // Detect available AI providers and collect responses
     let mut responses = Vec::new();
+    let header_response = "# Rattlebrain Replay Analysis\n\n\n".to_string();
+    responses.push(header_response);
 
     // OpenAI
     if let Ok(openai_key) = env::var("OPENAI_API_KEY") {
         println!("Using OpenAI with key: {}****", &openai_key[0..8]);
         match openai::query_openai(&query).await {
-            Ok(response) => responses.push(format!("OpenAI response: {}", response)),
+            Ok(response) => responses.push(format!("## OpenAI response\n\n {}", response)),
             Err(e) => eprintln!("Error querying OpenAI: {}", e),
         }
     }
 
-
-    // Claude
-    if let Ok(claude_key) = env::var("CLAUDE_API_KEY") {
-        println!("Using Claude with key: {}", &claude_key[0..4]);
-        responses.push(format!(
-            "Claude response to '{}': [This is a stubbed response from Claude]",
-            query
-        ));
+    // Anthropic
+    if let Ok(claude_key) = env::var("ANTHROPIC_API_KEY") {
+        println!("Using Anthropic with key: {}****", &claude_key[0..8]);
+        match anthropic::query_anthropic(&query).await {
+            Ok(response) => responses.push(format!("## Anthropic response\n\n {}", response)),
+            Err(e) => eprintln!("Error querying Claude: {}", e),
+        }
     }
 
     // Gemini
@@ -138,7 +137,7 @@ pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
     if responses.is_empty() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
-            "No AI providers configured. Please set one or more of the following: OPENAI_API_KEY, CLAUDE_API_KEY, GEMINI_API_KEY, COPILOT_API_KEY.",
+            "No AI providers configured. Please set one or more of the following: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, COPILOT_API_KEY.",
         ));
     }
 

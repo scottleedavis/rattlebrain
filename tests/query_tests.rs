@@ -52,3 +52,32 @@
 //     // Cleanupfile
 //     fs::remove_file(query_output_path).expect("Failed to remove query text file");
 // }
+
+
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use tokio;
+
+//     #[tokio::test]
+//     async fn test_claude_send_prompt() {
+//         let api_key = "test_api_key";
+//         let base_url = "https://api.anthropic.com/v1/complete";
+//         let claude_ai = ClaudeAI::new(api_key, base_url);
+
+//         // Replace this with a real prompt and expected response for integration testing.
+//         let prompt = "Hello, Claude!";
+//         let response = claude_ai
+//             .send_prompt(prompt, Some(100), Some(0.7))
+//             .await;
+
+//         match response {
+//             Ok(completion) => {
+//                 println!("Received response: {}", completion);
+//                 assert!(!completion.is_empty());
+//             }
+//             Err(e) => panic!("Failed to send prompt: {}", e),
+//         }
+//     }
+// }

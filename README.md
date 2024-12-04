@@ -1,6 +1,6 @@
 # RattleBrain
 
-**RattleBrain** is a command-line tool, written in Rust, designed to bring the power of AI to your **Rocket League** replay analysis. By leveraging **[Rattletrap](https://github.com/tfausak/rattletrap)** for parsing replay files and connecting to one or more AI services (e.g., OpenAI, Claude), RattleBrain extracts tactical insights, performance metrics, and actionable feedback to help you elevate your gameplay.
+**RattleBrain** is a command-line tool, written in Rust, designed to bring the power of AI providers to your **Rocket League** replay analysis. By leveraging **[Rattletrap](https://github.com/tfausak/rattletrap)** for parsing replay files and connecting to one or more AI services (e.g., OpenAI, Anthropic, Google), RattleBrain extracts tactical insights, performance metrics, and actionable feedback to help you elevate your gameplay.
 
 see the current [examples/feedback.md](examples/feedback.md) for an example of generated output.
 
@@ -17,7 +17,7 @@ also see the current [TODOs](TODO.md) for upcoming features.
 ## Features
 
 - **AI-Enhanced Analysis**: Analyze Rocket League replay files with the help of AI services for in-depth insights.
-- **Dynamic AI Selection**: Automatically detects and configures available AI services via environment variables (e.g., `OPENAI_API_KEY`, `CLAUDE_API_KEY`).
+- **Dynamic AI Selection**: Automatically detects and configures available AI services via environment variables (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
 - **Unified Reporting**: Combines outputs from multiple AI agents into a single, comprehensive report.
 - **Tactical Insights**: Highlights key plays, strategic opportunities, and areas for improvement.
 - **Performance Metrics**: Extracts useful data points to track your progress over time.
@@ -38,7 +38,7 @@ also see the current [TODOs](TODO.md) for upcoming features.
    - Add your API keys to your environment variables:
      ```bash
      export OPENAI_API_KEY=<your_openai_api_key>
-     export CLAUDE_API_KEY=<your_claude_api_key>
+     export ANTHROPIC_API_KEY=<your_anthropic_api_key>
      ```
 
 ---
@@ -80,7 +80,7 @@ cargo test
 ## Acknowledgments
 
 - **[Rattletrap](https://github.com/tfausak/rattletrap)**: RattleBrain wouldn’t be possible without this fantastic replay parser. Kudos to the creators and maintainers for providing such a robust tool!
-- **AI Service Providers**: OpenAI, Claude, and others for their advanced language models powering this tool.
+- **AI Service Providers**: OpenAI, Anthropic, and Google for their advanced language models powering this tool.
 
 ---
 
