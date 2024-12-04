@@ -9,7 +9,7 @@ also see the current [TODOs](TODO.md) for upcoming features.
 ## Usage
 [Download](https://github.com/scottleedavis/rattlebrain/releases) and Run the latest release of **RattleBrain** with a replay file
 ```bash
-./rattlebrain analyze <replay_file_or_url>
+./rattlebrain analyze <replay_file>
 ```
 
 ---
