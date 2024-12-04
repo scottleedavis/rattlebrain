@@ -1,7 +1,7 @@
 mod extract;
 mod convert;
 mod plot;
-mod ai;
+mod query;
 
 use std::env;
 use std::fs;
@@ -14,8 +14,8 @@ fn main() {
     if args.len() < 2 {
         println!("Usage: rattlebrain <command> [options]");
         println!("Commands:");
-        println!(" analysis <path/some.replay> - Analyze replay data. (runs extract, convert,plot and ai in sequence)");
-        println!(" ai <match_guid>  [focus] - Query AI for replay insights.");
+        println!(" analysis <path/some.replay> - Analyze replay data. (runs extract->convert->plot->query)");
+        println!(" query <match_guid> [focus] - Query AI for replay insights.");
         println!(" extract <path/some.replay> - Extract replay data to CSV.");
         println!(" convert <path/some.replay.json> - Convert replay JSON to processed data.");
         println!(" plot <<path/some.replay.csv> - Plot replay data.");

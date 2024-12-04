@@ -1,5 +1,6 @@
 use std::env;
 use std::io;
+use crate::ai::openai;
 
 use std::fs;
 use flate2::write::GzEncoder;
@@ -7,7 +8,7 @@ use flate2::Compression;
 use base64::{engine::general_purpose, Engine as _};
 use std::io::Write;
 
-pub fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
+pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
     // Define file paths based on the match_guid
     let player_stats_csv_path = format!("./output/{}.player_stats.json.csv", match_guid);
     let goals_csv_path = format!("./output/{}.goals.json.csv", match_guid);
@@ -96,11 +97,12 @@ pub fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
     // OpenAI
     if let Ok(openai_key) = env::var("OPENAI_API_KEY") {
         println!("Using OpenAI with key: {}", &openai_key[0..4]);
-        responses.push(format!(
-            "OpenAI response to '{}': [This is a stubbed response from OpenAI]",
-            query
-        ));
+        match openai::query_openai(&query).await {
+            Ok(response) => responses.push(format!("OpenAI response: {}", response)),
+            Err(e) => eprintln!("Error querying OpenAI: {}", e),
+        }
     }
+
 
     // Claude
     if let Ok(claude_key) = env::var("CLAUDE_API_KEY") {
