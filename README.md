@@ -41,19 +41,6 @@ also see the current [TODOs](TODO.md) for upcoming features.
      export CLAUDE_API_KEY=<your_claude_api_key>
      ```
 
-### Installation
-Clone the repository and build **RattleBrain**:
-```bash
-git clone https://github.com/scottleedavis/rattlebrain.git
-cd rattlebrain
-```
-#### Building/Testing
-
-```bash
-cargo build --release
-cargo test
-```
-
 ---
 
 ## How It Works
@@ -70,32 +57,19 @@ cargo test
 
 ---
 
-## Example Output
-
+### Installation
+Clone the repository and build **RattleBrain**:
+```bash
+git clone https://github.com/scottleedavis/rattlebrain.git
+cd rattlebrain
 ```
---- RattleBrain Unified Report ---
-Replay File: my_replay.replay
-Game Summary:
-- Goals: 3
-- Assists: 2
-- Saves: 4
+#### Building
 
-AI Insights:
-1. **OpenAI Feedback**:
-   - Your defensive positioning was strong, but over-committing led to missed opportunities.
-   - Suggested drills: defensive rotations and wall clears.
-
-2. **Claude Feedback**:
-   - Observed a consistent issue with boost management. Work on boost path efficiency.
-   - Recommended playstyle: Aggressive play with controlled boost usage.
-
-Performance Metrics:
-- Average Speed: 1233 UPS
-- Boost Usage Efficiency: 78%
-- Aerial Success Rate: 65%
+```bash
+cargo build --release
 ```
 
-## Testing
+#### Testing
 
 ```bash
 cargo test
