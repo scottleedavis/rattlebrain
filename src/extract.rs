@@ -88,6 +88,7 @@ pub fn extract_replay(input: &str) -> io::Result<()> {
     } else {
         "./rattletrap"
     })
+    .arg("--compact")
     .arg("--input")
     .arg(input)
     .arg("--output")

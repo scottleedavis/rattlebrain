@@ -79,6 +79,7 @@ async fn test_extract_replay_json_schema_validation() {
 
     // Run `rattletrap` to extract replay data to JSON
     let output_status = Command::new(rattletrap_path)
+        .arg("--compact")
         .arg("--input")
         .arg(input_replay)
         .arg("--output")

@@ -8,22 +8,22 @@ use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 pub struct GameState {
-    time: f64,
+    // time: f64,
     team: Option<u32>,
     player_name: String,
     location_x: f64,
     location_y: f64,
-    location_z: f64,
-    rotation_x: f64,
-    rotation_y: f64,
-    rotation_z: f64,
-    rotation_w: f64,
-    angular_velocity_x: f64,
-    angular_velocity_y: f64,
-    angular_velocity_z: f64,
-    linear_velocity_x: f64,
-    linear_velocity_y: f64,
-    linear_velocity_z: f64,
+    // location_z: f64,
+    // rotation_x: f64,
+    // rotation_y: f64,
+    // rotation_z: f64,
+    // rotation_w: f64,
+    // angular_velocity_x: f64,
+    // angular_velocity_y: f64,
+    // angular_velocity_z: f64,
+    // linear_velocity_x: f64,
+    // linear_velocity_y: f64,
+    // linear_velocity_z: f64,
 }
 
 pub fn plot_csv(file_path: &str) -> Result<Vec<GameState>, Box<dyn Error>> {

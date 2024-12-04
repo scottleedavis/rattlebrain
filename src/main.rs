@@ -12,7 +12,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        println!("Usage: rl_replay_ai <command> [options]");
+        println!("Usage: rattlebrain <command> [options]");
         println!("Commands:");
         println!(" analysis <path/some.replay> - Analyze replay data. (runs extract, convert, plot and ai in sequence)");
         println!(" extract <path/some.replay> - Extract replay data to CSV.");
@@ -27,7 +27,7 @@ fn main() {
     match command.as_str() {
         "extract" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis extract <input>");
+                println!("Usage: rattlebrain extract <input>");
                 return;
             }
             let input = &args[2];
@@ -39,7 +39,7 @@ fn main() {
         }
         "convert" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis convert <input>");
+                println!("Usage: rattlebrain convert <input>");
                 return;
             }
             let input = &args[2];
@@ -71,7 +71,7 @@ fn main() {
         }
         "plot" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis plot <csv>");
+                println!("Usage: rattlebrain plot <csv>");
                 return;
             }
             let csv_file = &args[2];
@@ -83,7 +83,7 @@ fn main() {
         }
         "analysis" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis analysis <file.replay>");
+                println!("Usage: rattlebrain analysis <file.replay>");
                 return;
             }
             let input = &args[2];
@@ -138,7 +138,7 @@ fn main() {
         }
         "ai" => {
             if args.len() < 3 {
-                println!("Usage: rocket-league-replay-ai-analysis ai <input>");
+                println!("Usage: rattlebrain ai <input>");
                 return;
             }
             let query = &args[2];
@@ -150,7 +150,7 @@ fn main() {
         }
         _ => {
             println!("Unknown command: {}", command);
-            println!("Usage: rocket-league-replay-ai-analysis <command> [options]");
+            println!("Usage: rattlebrain <command> [options]");
         }
     }
 }

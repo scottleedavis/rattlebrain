@@ -196,6 +196,7 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
     let empty_array: Vec<Value> = vec![];
     let frames = data.as_array().unwrap_or(&empty_array);
     let mut player_map: HashMap<String, String> = HashMap::new();
+    let mut player_actor_map: HashMap<String, String> = HashMap::new();
     let mut team_map: HashMap<String, String> = HashMap::new();
     let mut car_map: HashMap<String, String> = HashMap::new();
     let mut car_boost_map: HashMap<String, i64> = HashMap::new();
@@ -244,8 +245,19 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                             }
 
                         } else if name == "Engine.Pawn:PlayerReplicationInfo" || 
-                            name == "TAGame.CarComponent_TA:Vehicle" ||
                             name == "Engine.Pawn:PlayerReplicationInfo"  {
+                            if let Some(value_int) = update
+                                .get("value")
+                                .and_then(|value| value.get("flagged_int"))
+                                .and_then(|value| value.get("int"))
+                                .and_then(|int_value| int_value.as_i64()) 
+                            {
+                                if value_int > 0 {
+                                    player_actor_map.insert(actor_id.clone(), value_int.to_string());
+                                }
+                                
+                            }
+                        } else if name == "TAGame.CarComponent_TA:Vehicle"  {
                             if let Some(value_int) = update
                                 .get("value")
                                 .and_then(|value| value.get("flagged_int"))
@@ -253,26 +265,20 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                                 .and_then(|int_value| int_value.as_i64())
 
                             {
-                                if let Some(_name) = player_map.get(&value_int.to_string()) {
-                                    car_map.insert(actor_id.clone(),value_int.to_string() );
-                                }
-
+                                car_map.insert(actor_id.clone(),value_int.to_string() );
                             }
-                        } else if name == "\"TAGame.CarComponent_Boost_TA:ReplicatedBoost\"" {
-                             if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
-                                if let Some(value_int) = update
-                                    .get("value")
-                                    .and_then(|value| value.get("boost"))
-                                    .and_then(|value| value.get("boostAmount"))
-                                    .and_then(|int_value| int_value.as_i64())
-
-                                {
-                                    car_boost_map.insert(actor_id.clone(), value_int);                                    
+                         } else if name == "TAGame.CarComponent_Boost_TA:ReplicatedBoost" {
+                            // Extract boost value
+                            if let Some(value_int) = update
+                                .get("value")
+                                .and_then(|value| value.get("boost"))
+                                .and_then(|value| value.get("boostAmount"))
+                                .and_then(|boost| boost.as_i64())
+                            {
+                                if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
+                                    car_boost_map.insert(cname.to_string(), value_int);
                                 }
-                             } else {
-                                //where is this boost
-                             }
-                            
+                            }
                         }
                     }
                 }
@@ -290,8 +296,10 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
                     let obj_name = spawned.get("object_name").unwrap_or(&Value::Null).to_string();
                     if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
                         if obj_name == "\"Archetypes.Car.Car_Default\""{
-                            let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
-                            let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+
+                            let paname = player_actor_map.get(cname).map(String::as_str).unwrap_or("Unknown");
+                            let pname = player_map.get(paname).map(String::as_str).unwrap_or("Unknown");
+                            let tname = team_map.get(paname).map(String::as_str).unwrap_or("Unknown");
                             let boost = car_boost_map.get(cname).copied().unwrap_or(0);
 
                             let location_x = spawned.pointer("/initialization/location/x")
@@ -359,70 +367,65 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
 
                         if name == "\"TAGame.RBActor_TA:ReplicatedRBState\"" {
 
-                            // let value = serde_json::to_string(update.get("value").unwrap_or(&Value::Null))
-                            //                 .unwrap_or_else(|_| "{}".to_string())
-                            //                 .replace("\"", "\\\"");
+                            if let Some(paname) = player_actor_map.get(&actor_id).map(String::as_str) {
 
-                            if let Some(cname) = car_map.get(&actor_id).map(String::as_str) {
-                                if cname != "Unknown" {
-                                    let pname = player_map.get(cname).map(String::as_str).unwrap_or("Unknown");
-                                    let tname = team_map.get(cname).map(String::as_str).unwrap_or("Unknown");
-                                    let boost = car_boost_map.get(cname).copied().unwrap_or(0);
+                                let pname = player_map.get(paname).map(String::as_str).unwrap_or("Unknown");
+                                let tname = team_map.get(paname).map(String::as_str).unwrap_or("Unknown");
+                                let boost = car_boost_map.get(&actor_id).copied().unwrap_or(0);
 
-                                    let location_x = update.pointer("/value/rigid_body_state/location/x")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
-                                    let location_y = update.pointer("/value/rigid_body_state/location/y")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
-                                    let location_z = update.pointer("/value/rigid_body_state/location/z")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
+                                let location_x = update.pointer("/value/rigid_body_state/location/x")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let location_y = update.pointer("/value/rigid_body_state/location/y")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let location_z = update.pointer("/value/rigid_body_state/location/z")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
 
-                                    let rotation_x = update.pointer("/value/rigid_body_state/rotation/quaternion/x")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
-                                    let rotation_y = update.pointer("/value/rigid_body_state/rotation/quaternion/y")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
-                                    let rotation_z = update.pointer("/value/rigid_body_state/rotation/quaternion/z")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
-                                    let rotation_w = update.pointer("/value/rigid_body_state/rotation/quaternion/w")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
+                                let rotation_x = update.pointer("/value/rigid_body_state/rotation/quaternion/x")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_y = update.pointer("/value/rigid_body_state/rotation/quaternion/y")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_z = update.pointer("/value/rigid_body_state/rotation/quaternion/z")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let rotation_w = update.pointer("/value/rigid_body_state/rotation/quaternion/w")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
 
-                                    let angular_velocity_x = update.pointer("/value/rigid_body_state/angular_velocity/x")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
-                                    let  angular_velocity_y = update.pointer("/value/rigid_body_state/angular_velocity/y")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
-                                    let  angular_velocity_z = update.pointer("/value/rigid_body_state/angular_velocity/z")
-                                        .and_then(Value::as_i64)
-                                        .unwrap_or(0);
+                                let angular_velocity_x = update.pointer("/value/rigid_body_state/angular_velocity/x")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let  angular_velocity_y = update.pointer("/value/rigid_body_state/angular_velocity/y")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
+                                let  angular_velocity_z = update.pointer("/value/rigid_body_state/angular_velocity/z")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(0);
 
-                                    let linear_velocity_x = update.pointer("/value/rigid_body_state/linear_velocity/x")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
-                                    let linear_velocity_y = update.pointer("/value/rigid_body_state/linear_velocity/y")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
-                                    let linear_velocity_z = update.pointer("/value/rigid_body_state/linear_velocity/z")
-                                        .and_then(Value::as_f64)
-                                        .unwrap_or(0.0);
+                                let linear_velocity_x = update.pointer("/value/rigid_body_state/linear_velocity/x")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let linear_velocity_y = update.pointer("/value/rigid_body_state/linear_velocity/y")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
+                                let linear_velocity_z = update.pointer("/value/rigid_body_state/linear_velocity/z")
+                                    .and_then(Value::as_f64)
+                                    .unwrap_or(0.0);
 
-                                    lines.push(format!(
-                                         "{},{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
-                                        frame_index, time, tname, pname, boost,
-                                        location_x, location_y, location_z,
-                                        rotation_x, rotation_y, rotation_z, rotation_w,
-                                        angular_velocity_x, angular_velocity_y, angular_velocity_z,
-                                        linear_velocity_x, linear_velocity_y, linear_velocity_z
-                                     ));
-                                }
+                                lines.push(format!(
+                                        "{},{},{},\"{}\",{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
+                                    frame_index, time, tname, pname, boost,
+                                    location_x, location_y, location_z,
+                                    rotation_x, rotation_y, rotation_z, rotation_w,
+                                    angular_velocity_x, angular_velocity_y, angular_velocity_z,
+                                    linear_velocity_x, linear_velocity_y, linear_velocity_z
+                                    ));
+
                             } else if actor_id == ball_id {
-
 
                                 let location_x = update.pointer("/value/rigid_body_state/location/x")
                                     .and_then(Value::as_i64)
@@ -482,6 +485,12 @@ pub fn parse_frames(data: &Value, file: &mut dyn Write) -> Result<(), Box<dyn st
             }
         }
     }
+
+    // println!("Player Map: {:#?}", player_map);
+    // println!("Player Actor Map: {:#?}", player_actor_map);
+    // println!("Team Map: {:?}", team_map);
+    // println!("Car Map: {:#?}", car_map);
+    // println!("Boost Map: {:#?}", car_boost_map);
 
     let mut writer = BufWriter::new(file);
     for line in &lines {
