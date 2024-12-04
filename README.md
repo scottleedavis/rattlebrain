@@ -2,7 +2,7 @@
 
 **RattleBrain** is a command-line tool, written in Rust, designed to bring the power of AI to your **Rocket League** replay analysis. By leveraging **[Rattletrap](https://github.com/tfausak/rattletrap)** for parsing replay files and connecting to one or more AI services (e.g., OpenAI, Claude), RattleBrain extracts tactical insights, performance metrics, and actionable feedback to help you elevate your gameplay.
 
-see the current [TODO.md](TODO.md) for what is in the works.
+see the current [examples/feedback.md](examples/feedback.md) for an example of generated output.
 
 ---
 
