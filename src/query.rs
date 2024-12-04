@@ -1,5 +1,6 @@
 use crate::ai::openai;
 use crate::ai::anthropic;
+use crate::ai::google;
 
 use std::fs;
 use std::env;
@@ -117,20 +118,11 @@ pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
 
     // Gemini
     if let Ok(gemini_key) = env::var("GEMINI_API_KEY") {
-        println!("Using Gemini with key: {}", &gemini_key[0..4]);
-        responses.push(format!(
-            "Gemini response to '{}': [This is a stubbed response from Gemini]",
-            query
-        ));
-    }
-
-    // GitHub Copilot
-    if let Ok(copilot_key) = env::var("COPILOT_API_KEY") {
-        println!("Using GitHub Copilot with key: {}", &copilot_key[0..4]);
-        responses.push(format!(
-            "GitHub Copilot response to '{}': [This is a stubbed response from Copilot]",
-            query
-        ));
+        println!("Using Google with key: {}****", &gemini_key[0..8]);
+        match google::query_gemini(&query).await {
+            Ok(response) => responses.push(format!("## Gemini response\n\n {}", response)),
+            Err(e) => eprintln!("Error querying Gemini: {}", e),
+        }
     }
 
     // Handle case where no providers are configured

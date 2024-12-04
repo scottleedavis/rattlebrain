@@ -17,7 +17,7 @@ also see the current [TODOs](TODO.md) for upcoming features.
 ## Features
 
 - **AI-Enhanced Analysis**: Analyze Rocket League replay files with the help of AI services for in-depth insights.
-- **Dynamic AI Selection**: Automatically detects and configures available AI services via environment variables (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
+- **Dynamic AI Selection**: Automatically detects and configures available AI services via environment variables (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`).
 - **Unified Reporting**: Combines outputs from multiple AI agents into a single, comprehensive report.
 - **Tactical Insights**: Highlights key plays, strategic opportunities, and areas for improvement.
 - **Performance Metrics**: Extracts useful data points to track your progress over time.
@@ -35,10 +35,11 @@ also see the current [TODOs](TODO.md) for upcoming features.
    - Get API keys for the AI services you'd like to use (e.g., OpenAI, Claude).
 
 3. Set Environment Variables:
-   - Add your API keys to your environment variables:
+   - Add API keys to AI Services in environment variables (at least 1):
      ```bash
      export OPENAI_API_KEY=<your_openai_api_key>
      export ANTHROPIC_API_KEY=<your_anthropic_api_key>
+     export GEMINI_API_KEY=<your_google_gemini_api_key>
      ```
 
 ---
