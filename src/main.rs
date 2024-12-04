@@ -140,7 +140,7 @@ fn main() {
             let focus = if args.len() > 3 { &args[3] } else { "all" };
 
             println!("Querying AI for insights...");
-            match ai::query_ai(match_guid, focus) {
+            match query::query_ai(match_guid, focus) {
                 Ok(response) => println!("AI Response: {}", response),
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }
