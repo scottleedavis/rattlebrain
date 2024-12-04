@@ -15,10 +15,10 @@ fn main() {
         println!("Usage: rattlebrain <command> [options]");
         println!("Commands:");
         println!(" analysis <path/some.replay> - Analyze replay data. (runs extract, convert,plot and ai in sequence)");
+        println!(" ai <match_guid>  [focus] - Query AI for replay insights.");
         println!(" extract <path/some.replay> - Extract replay data to CSV.");
         println!(" convert <path/some.replay.json> - Convert replay JSON to processed data.");
         println!(" plot <<path/some.replay.csv> - Plot replay data.");
-        println!(" ai <query> - Query AI for replay insights.");
         return;
     }
 
@@ -116,6 +116,7 @@ fn main() {
             for file in [replay_file, player_statistics_file, goals_file, highlights_file].iter() {
                 process_conversion(file);
             }
+            delete_json_files("./output");
 
             // Step 3: Plot
             let csv_file = format!("./output/{}.replay.frames.json.csv",match_guid);
@@ -130,15 +131,20 @@ fn main() {
         }
         "ai" => {
             if args.len() < 3 {
-                println!("Usage: rattlebrain ai <input>");
+                println!("Usage: rattlebrain ai <match_guid> [focus]");
                 return;
             }
-            let query = &args[2];
+
+            let match_guid = &args[2];
+            // Set focus to "all" if not provided, otherwise pass the provided value
+            let focus = if args.len() > 3 { &args[3] } else { "all" };
+
             println!("Querying AI for insights...");
-            match ai::query_ai(query) {
+            match ai::query_ai(match_guid, focus) {
                 Ok(response) => println!("AI Response: {}", response),
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }
+
         }
         _ => {
             println!("Unknown command: {}", command);
@@ -172,4 +178,24 @@ fn process_conversion(file_path: &str) {
     }
 
     println!("Conversion completed successfully for file: {}", file_path);
+}
+
+fn delete_json_files(output_dir: &str) {
+    match fs::read_dir(output_dir) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let path = entry.path();
+                    if path.extension().and_then(|ext| ext.to_str()) == Some("json") {
+                        if let Err(e) = fs::remove_file(&path) {
+                            eprintln!("Failed to delete file {}: {}", path.display(), e);
+                        } else {
+                            println!("Deleted file: {}", path.display());
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => eprintln!("Failed to read directory {}: {}", output_dir, e),
+    }
 }
