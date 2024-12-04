@@ -41,8 +41,10 @@ also see the current [TODOs](TODO.md) for upcoming features.
      export ANTHROPIC_API_KEY=<your_anthropic_api_key>
      export GEMINI_API_KEY=<your_google_gemini_api_key>
      ```
-
----
+4. Run RattleBrain:
+     ```bash
+      ./rattlebrain analyze ./examples/363cf8d9-8d7f-4c55-95a8-b97edbab0449.replay 
+     ```
 
 ## How It Works
 
