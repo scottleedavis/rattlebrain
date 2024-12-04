@@ -84,7 +84,7 @@ pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
         strategy_template, mechanics_template, decision_making_template, player_stats_csv, goals_csv, highlights_csv, frames_subset_csv
     );
 
-    println!("Processing AI query: {}", query);
+    // println!("Processing AI query: {}", query);
     let query_file_path = format!("./output/{}_query.txt", match_guid);
     fs::write(&query_file_path, &query).map_err(|e| {
         eprintln!("Failed to save query to file: {}", query_file_path);
@@ -96,7 +96,7 @@ pub async fn query_ai(match_guid: &str, focus: &str) -> io::Result<String> {
 
     // OpenAI
     if let Ok(openai_key) = env::var("OPENAI_API_KEY") {
-        println!("Using OpenAI with key: {}", &openai_key[0..4]);
+        println!("Using OpenAI with key: {}", &openai_key[0..8]);
         match openai::query_openai(&query).await {
             Ok(response) => responses.push(format!("OpenAI response: {}", response)),
             Err(e) => eprintln!("Error querying OpenAI: {}", e),

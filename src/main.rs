@@ -2,13 +2,17 @@ mod extract;
 mod convert;
 mod plot;
 mod query;
+mod ai;
 
 use std::env;
 use std::fs;
 use std::process;
 use serde_json::Value;
 
-fn main() {
+use tokio;
+
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
@@ -140,7 +144,7 @@ fn main() {
             let focus = if args.len() > 3 { &args[3] } else { "all" };
 
             println!("Querying AI for insights...");
-            match query::query_ai(match_guid, focus) {
+            match query::query_ai(match_guid, focus).await {
                 Ok(response) => println!("AI Response: {}", response),
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }

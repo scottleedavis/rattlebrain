@@ -37,7 +37,7 @@ pub async fn query_openai(prompt: &str) -> Result<String, Box<dyn Error>> {
 
     // Create the OpenAI request payload
     let request_body = OpenAIRequest {
-        model: "gpt-4".to_string(),
+        model: "gpt-4o".to_string(),
         messages: vec![
             Message {
                 role: "system".to_string(),
