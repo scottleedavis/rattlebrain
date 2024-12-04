@@ -1,6 +1,6 @@
 [package]
 name = "rattlebrain"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Scott Davis <scottleedavis@gmail.com>"]
 description = "A Rocket League replay analyzer using Multiple AI agents"
