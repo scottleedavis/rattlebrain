@@ -1,92 +1,54 @@
-#[cfg(test)]
-mod ai_tests {
-    use std::process::Command;
-    use std::env;
+// use rattlebrain::query::query_ai;
+// use std::fs;
 
-    // #[test]
-    // fn test_ai_command_with_openai() {
-    //     let stdout = run_ai_command("test_query", "openai"); // Simulates the command execution
-    //     assert!(
-    //         stdout.contains("Using OpenAI with key: test-ope****"),
-    //         "Expected OpenAI key usage in stdout"
-    //     );
-    //     assert!(
-    //         stdout.contains("AI feedback saved to: ./output/test_query.feedback.md"),
-    //         "Expected feedback save message in stdout"
-    //     );
-    // }
+// #[test]
+// fn test_query_output_file_exists() {
+//     // Define the path to the query output file
+//     let match_guid = "383F0B0411EFAC27082CAFA884251EFF".to_string();
+//     let query_output_path = format!("output/{}.query.txt", match_guid);
+//     let focus = "all".to_string();
 
+//     // println!("Querying AI for insights...");
+//     // match query_ai(match_guid, focus).await {
+//     //     Ok(response) => {
+//     //         println!("{}", &response);
+//     //     }
+//     //     Err(e) => eprintln!("Failed to save AI feedback: {}", e),
+//     // }
 
+//     // Check if the output file exists
+//     assert!(
+//         fs::metadata(query_output_path).is_ok(),
+//         "The query output file does not exist at the expected location: {}",
+//         query_output_path
+//     );
 
-    // #[test]
-    // fn test_ai_command_with_claude() {
-    //     env::set_var("CLAUDE_API_KEY", "test-claude-key");
-    //     let output = Command::new("cargo")
-    //         .args(&["run", "--", "ai", "test_query"])
-    //         .output()
-    //         .expect("Failed to execute process");
+//     // Cleanupfile
+//     fs::remove_file(query_output_path).expect("Failed to remove query text file");
+// }
 
-    //     let stdout = String::from_utf8_lossy(&output.stdout);
+// #[test]
+// async fn test_query_output_file_exists() {
+//     // Define the path to the query output file
+//     let match_guid = "383F0B0411EFAC27082CAFA884251EFF".to_string();
+//     let query_output_path = format!("output/{}.query.txt", match_guid);
+//     let focus = "all".to_string();
 
-    //     assert!(stdout.contains("Processing AI query: test_query"));
-    //     assert!(stdout.contains("Claude response to 'test_query': [This is a stubbed response from Claude]"));
+//     println!("Querying AI for insights...");
+//     match query::query_ai(match_guid, focus).await {
+//         Ok(response) => {
+//             println!("{}", &response);
+//         }
+//         Err(e) => eprintln!("Failed to save AI feedback: {}", e),
+//     }
 
-    //     env::remove_var("CLAUDE_API_KEY");
-    // }
+//     // Check if the output file exists
+//     assert!(
+//         fs::metadata(query_output_path).is_ok(),
+//         "The query output file does not exist at the expected location: {}",
+//         query_output_path
+//     );
 
-    // #[test]
-    // fn test_ai_command_with_gemini() {
-    //     env::set_var("GEMINI_API_KEY", "test-gemini-key");
-    //     let output = Command::new("cargo")
-    //         .args(&["run", "--", "ai", "test_query"])
-    //         .output()
-    //         .expect("Failed to execute process");
-
-    //     let stdout = String::from_utf8_lossy(&output.stdout);
-
-    //     assert!(stdout.contains("Processing AI query: test_query"));
-    //     assert!(stdout.contains("Gemini response to 'test_query': [This is a stubbed response from Gemini]"));
-
-    //     env::remove_var("GEMINI_API_KEY");
-    // }
-
-    // #[test]
-    // fn test_ai_command_with_copilot() {
-    //     env::set_var("COPILOT_API_KEY", "test-copilot-key");
-    //     let output = Command::new("cargo")
-    //         .args(&["run", "--", "ai", "test_query"])
-    //         .output()
-    //         .expect("Failed to execute process");
-
-    //     let stdout = String::from_utf8_lossy(&output.stdout);
-
-    //     assert!(stdout.contains("Processing AI query: test_query"));
-    //     assert!(stdout.contains("GitHub Copilot response to 'test_query': [This is a stubbed response from Copilot]"));
-
-    //     env::remove_var("COPILOT_API_KEY");
-    // }
-
-    // #[test]
-    // fn test_ai_command_with_no_providers() {
-    //     // Unset any existing AI provider environment variables
-    //     std::env::remove_var("OPENAI_API_KEY");
-    //     std::env::remove_var("CLAUDE_API_KEY");
-    //     std::env::remove_var("GEMINI_API_KEY");
-    //     std::env::remove_var("COPILOT_API_KEY");
-
-    //     let output = std::process::Command::new("cargo")
-    //         .args(&["run", "--", "ai", "test_query"])
-    //         .output()
-    //         .expect("Failed to execute process");
-
-    //     let stdout = String::from_utf8_lossy(&output.stdout);
-    //     let stderr = String::from_utf8_lossy(&output.stderr);
-
-    //     println!("STDOUT: {}", stdout);
-    //     println!("STDERR: {}", stderr);
-
-    //     // Check for expected error message
-    //     assert!(stderr.contains("No AI providers configured."));
-    // }
-
-}
+//     // Cleanupfile
+//     fs::remove_file(query_output_path).expect("Failed to remove query text file");
+// }
