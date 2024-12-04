@@ -132,7 +132,63 @@ async fn main() {
             }
 
             // Step 4: AI
-            println!("TOOD AI analysis....");
+            let focus =  "all".to_string();
+
+            println!("Querying AI for insights...");
+            match query::query_ai(&match_guid, &focus).await {
+                Ok(response) => {
+                    let feedback_file_path = format!("./output/{}.feedback.md", match_guid);
+
+                    // Save the AI response to the feedback file
+                    match fs::write(&feedback_file_path, &response) {
+                        Ok(_) => {
+                            println!("AI feedback saved to: {}", feedback_file_path);
+
+                            // Append image links to the feedback file
+                            let image_pattern = format!("./output/{}*.png", match_guid);
+                            let image_paths = match glob::glob(&image_pattern) {
+                                Ok(paths) => paths.filter_map(Result::ok).collect::<Vec<_>>(),
+                                Err(e) => {
+                                    eprintln!("Error finding images: {}", e);
+                                    Vec::new()
+                                }
+                            };
+
+                            if !image_paths.is_empty() {
+                                let mut image_markdown = String::new();
+                                for image_path in image_paths {
+                                    let image_file_name = image_path.file_name().unwrap_or_default().to_string_lossy();
+                                    image_markdown.push_str(&format!(
+                                        "![{}]({})\n",
+                                        match_guid,
+                                        image_file_name
+                                    ));
+                                }
+
+                            // Open the file in append mode and add the image markdown
+                            let mut feedback_file = match fs::OpenOptions::new()
+                                .append(true)
+                                .open(&feedback_file_path)
+                            {
+                                Ok(file) => file,
+                                Err(e) => {
+                                    eprintln!("Failed to open feedback file for appending: {}", e);
+                                    return;
+                                }
+                            };
+
+                            if let Err(e) = feedback_file.write_all(image_markdown.as_bytes()) {
+                                eprintln!("Failed to append images to feedback: {}", e);
+                            } else {
+                                println!("Images appended to feedback file.");
+                            }
+                            }
+                        }
+                        Err(e) => eprintln!("Failed to save AI feedback: {}", e),
+                    }
+                }
+                Err(e) => eprintln!("Error querying AI: {}", e),
+            }
         }
         "ai" => {
             if args.len() < 3 {

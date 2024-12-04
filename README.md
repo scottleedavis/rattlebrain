@@ -4,6 +4,14 @@
 
 see the current [examples/feedback.md](examples/feedback.md) for an example of generated output.
 
+also see the current [TODOs](TODO.md) for upcoming features.
+
+## Usage
+[Download](https://github.com/scottleedavis/rattlebrain/releases) and Run the latest release of **RattleBrain** with a replay file
+```bash
+./rattlebrain analyze <replay_file_or_url>
+```
+
 ---
 
 ## Features
@@ -18,12 +26,6 @@ see the current [examples/feedback.md](examples/feedback.md) for an example of g
 ---
 
 ## Getting Started
-
-### Usage
-[Download](https://github.com/scottleedavis/rattlebrain/releases) and Run the latest release of **RattleBrain** with a replay file
-```bash
-./rattlebrain analyze <replay_file_or_url>
-```
 
 ### Prerequisites
 1. Install **Rattletrap**:
