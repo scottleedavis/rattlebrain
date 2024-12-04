@@ -7,4 +7,5 @@ output/*.csv
 output/*.png
 output/*.replay
 output/*.txt
+output/*.md
 rattletrap*

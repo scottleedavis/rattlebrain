@@ -145,7 +145,13 @@ async fn main() {
 
             println!("Querying AI for insights...");
             match query::query_ai(match_guid, focus).await {
-                Ok(response) => println!("AI Response: {}", response),
+                Ok(response) => {
+                    let feedback_file_path = format!("./output/{}.feedback.md", match_guid);
+                    match fs::write(&feedback_file_path, &response) {
+                        Ok(_) => println!("AI feedback saved to: {}", feedback_file_path),
+                        Err(e) => eprintln!("Failed to save AI feedback: {}", e),
+                    }
+                }
                 Err(e) => eprintln!("Error querying AI: {}", e),
             }
 
