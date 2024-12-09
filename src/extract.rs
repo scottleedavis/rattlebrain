@@ -21,8 +21,8 @@ pub fn extract_replay(input: &str) -> io::Result<String> {
     // If not, download it locally
     if !rattletrap_exists && !rattletrap_path.exists() {
         println!("Rattletrap not found. Downloading...");
-        let download_url = "https://github.com/tfausak/rattletrap/releases/download/14.0.0/rattletrap-14.0.0-linux-x64.tar.gz";
-        let tar_file = "rattletrap-14.0.0-linux-x64.tar.gz";
+        let download_url = "https://github.com/tfausak/rattletrap/releases/download/14.1.0/rattletrap-14.1.0-linux-x64.tar.gz";
+        let tar_file = "rattletrap-14.1.0-linux-x64.tar.gz";
 
         // Download the tar.gz
         let wget_status = Command::new("wget")
