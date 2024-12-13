@@ -1,6 +1,7 @@
 # TODOs
 
-0) Fix OpenAI tests
-1) get Claude API and Gemini APIs working
-2) Package Summary with Plots
-3) Tailor feedback for a specific player (including mechanics)
+- Sitch together replay frame windows that address the points the AI coach makes
+- - from the sequence of replays, add relevant screenshots/videos that express the feedback the coach is making
+- Fix OpenAI tests
+- get Claude API and Gemini APIs working
+- Optionally Tailor feedback for a specific player 
